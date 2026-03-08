@@ -1,6 +1,6 @@
 package com.example.bookingapp.services;
 
-import com.example.bookingapp.Utils.JwtUtil;
+import com.example.bookingapp.utils.JwtUtil;
 import com.example.bookingapp.dto.AuthResponse;
 import com.example.bookingapp.entity.User;
 import com.example.bookingapp.exception.AppException;
@@ -15,10 +15,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-
 public class AuthService {
     private final UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
@@ -37,26 +36,26 @@ public class AuthService {
         String token = jwtUtil.generateToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole().name())
+//                .email(user.getEmail())
+//                .fullName(user.getFullName())
+//                .role(user.getRole().name())
                 .build();
     }
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+            throw new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL);
         }
 
         String token = jwtUtil.generateToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole().name())
+//                .email(user.getEmail())
+//                .fullName(user.getFullName())
+//                .role(user.getRole().name())
                 .build();
     }
 }

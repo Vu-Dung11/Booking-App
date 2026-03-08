@@ -1,6 +1,4 @@
-package com.example.bookingapp.Utils;
-
-
+package com.example.bookingapp.utils;
 
 import com.example.bookingapp.entity.User;
 import io.jsonwebtoken.Claims;
@@ -20,12 +18,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Chuỗi bí mật dùng để ký token (Phải dài ít nhất 256 bits / 32 ký tự)
-    // Thực tế nên cấu hình chuỗi này trong application.properties: jwt.secret=...
     @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
 
-    // Thời gian sống của token (VD: 24 giờ = 1000 * 60 * 60 * 24)
     @Value("${jwt.expiration:86400000}")
     private long jwtExpiration;
 

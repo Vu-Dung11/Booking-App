@@ -8,8 +8,5 @@ import lombok.Getter;
 @Builder
 
 public class AuthResponse {
-    private String token; // Chuỗi JWT để client lưu lại
-    private String email;
-    private String fullName;
-    private String role;
+    private String token;
 }
