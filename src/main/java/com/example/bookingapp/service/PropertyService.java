@@ -16,8 +16,6 @@ import com.example.bookingapp.form.SearchRequest;
 import com.example.bookingapp.repository.PropertyRepository;
 import com.example.bookingapp.repository.RoomRepository;
 import com.example.bookingapp.repository.UserRepository;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,10 +34,12 @@ public class PropertyService {
     private final InventoryService inventoryService;
 
     private User getCurrentUser() {
+
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw AppException(ErrorCode.USER_NOT_AUTHENTICATED);
+            throw new AppException(ErrorCode.USER_NOT_AUTHENTICATED);
         }
         String email = authentication.getName();
         return userRepository.findByEmail(email)

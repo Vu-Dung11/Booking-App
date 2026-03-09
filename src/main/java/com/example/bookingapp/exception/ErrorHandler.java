@@ -34,7 +34,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, headers, status);
     }
 
-    // cứ 1 ngoại lệ sẽ xử lý ở trong này
+    // cứ 1 ngoạiy lệ sẽ xử lý ở trong nà
     // để xử lý ngoại lệ mà spring có thể biết được thêm annoation
     @ExceptionHandler(value = ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolation(
