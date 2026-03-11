@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -43,6 +44,14 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
     public enum BookingStatus {
         PENDING,    // Vừa đặt xong, đang chờ thanh toán
         CONFIRMED,  // Đã thanh toán thành công

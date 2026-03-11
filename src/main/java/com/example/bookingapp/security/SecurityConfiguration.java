@@ -38,7 +38,7 @@ public class SecurityConfiguration {
                         // Public các API liên quan đến xác thực và tìm kiếm chung
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         // .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
-
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Các API khác yêu cầu phải đăng nhập
                         .anyRequest().authenticated()
                 )

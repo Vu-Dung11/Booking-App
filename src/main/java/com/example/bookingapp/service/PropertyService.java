@@ -1,9 +1,6 @@
 package com.example.bookingapp.service;
 
-
 import com.example.bookingapp.dto.PropertySearchResponse;
-
-
 import com.example.bookingapp.dto.RoomSearchResponse;
 import com.example.bookingapp.enm.ErrorCode;
 import com.example.bookingapp.entity.Property;
@@ -17,7 +14,6 @@ import com.example.bookingapp.repository.PropertyRepository;
 import com.example.bookingapp.repository.RoomRepository;
 import com.example.bookingapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,102 +24,101 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PropertyService {
-    private final PropertyRepository propertyRepository;
-    private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
-    private final InventoryService inventoryService;
+        private final PropertyRepository propertyRepository;
+        private final RoomRepository roomRepository;
+        private final UserRepository userRepository;
+        private final InventoryService inventoryService;
 
-    private User getCurrentUser() {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AppException(ErrorCode.USER_NOT_AUTHENTICATED);
-        }
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    @Transactional
-    public Property createProperty(PropertyRequest request) {
-        User host = getCurrentUser();
-
-        Property property = Property.builder()
-                .host(host)
-                .name(request.getName())
-                .description(request.getDescription())
-                .address(request.getAddress())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .isActive(true)
-                .build();
-
-        return propertyRepository.save(property);
-    }
-
-    // thêm phòng vào property
-    @Transactional
-    public Room addRoomToProperty(Long propertyId, RoomRequest roomRequest) {
-        User host = getCurrentUser();
-//        Tìm property và kiểm tra xem property này có thuộc về host đang đăng nhập không
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(()-> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
-
-        if(!property.getHost().getId().equals(host.getId())){
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        private User getCurrentUser() {
+                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (principal instanceof User) {
+                        return (User) principal;
+                }
+                String email = SecurityContextHolder.getContext().getAuthentication().getName();
+                return userRepository.findByEmail(email)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         }
 
-        Room room = Room.builder()
-                .property(property)
-                .roomType(roomRequest.getRoomType())
-                .capacity(roomRequest.getCapacity())
-                .basePrice(roomRequest.getBasePrice())
-                .quantity(roomRequest.getQuantity())
-                .build();
-        Room savedRoom = roomRepository.save(room);
-        inventoryService.generateInitialInventory(savedRoom);
-        return savedRoom;
-    }
-    @Transactional(readOnly = true)
-    public List<PropertySearchResponse> searchProperties(SearchRequest request) {
-        // 1. Tính số đêm lưu trú
-        long duration = java.time.temporal.ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        @Transactional
+        public Property createProperty(PropertyRequest request) {
+                User host = getCurrentUser();
 
-        // 2. Gọi Repository lấy danh sách Homestay thỏa mãn
-        List<Property> properties = propertyRepository.searchAvailableProperties(
-                request.getCity(),
-                request.getCheckIn(),
-                request.getCheckOut(),
-                request.getGuests(),
-                duration
-        );
+                Property property = Property.builder()
+                                .host(host)
+                                .name(request.getName())
+                                .description(request.getDescription())
+                                .address(request.getAddress())
+                                .city(request.getCity())
+                                .country(request.getCountry())
+                                .isActive(true)
+                                .build();
 
-        // 3. Map dữ liệu sang DTO (Ở dự án thực tế nên dùng MapStruct để code sạch hơn)
-        return properties.stream().map(p -> {
-            // Lọc lại các phòng thực sự còn trống của property này
-            List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(p.getId()).stream()
-                    .filter(r -> r.getCapacity() >= request.getGuests())
-                    // Lưu ý: Chỗ này cần gọi thêm một hàm check inventory của riêng phòng này
-                    // để đảm bảo tính chính xác trước khi trả về
-                    .map(r -> RoomSearchResponse.builder()
-                            .roomId(r.getId())
-                            .roomType(r.getRoomType())
-                            .price(r.getBasePrice())
-                            .capacity(r.getCapacity())
-                            .build())
-                    .toList();
+                return propertyRepository.save(property);
+        }
 
-            return PropertySearchResponse.builder()
-                    .propertyId(p.getId())
-                    .propertyName(p.getName())
-                    .address(p.getAddress())
-                    .city(p.getCity())
-                    .availableRooms(rooms)
-                    .minPrice(rooms.stream().map(RoomSearchResponse::getPrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO))
-                    .build();
-        }).toList();
-    }
+        // thêm phòng vào property
+        @Transactional
+        public Room addRoomToProperty(Long propertyId, RoomRequest roomRequest) {
+                User host = getCurrentUser();
+                // Tìm property và kiểm tra xem property này có thuộc về host đang đăng nhập
+                // không
+                Property property = propertyRepository.findById(propertyId)
+                                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+
+                if (!property.getHost().getId().equals(host.getId())) {
+                        throw new AppException(ErrorCode.UNAUTHORIZED);
+                }
+
+                Room room = Room.builder()
+                                .property(property)
+                                .roomType(roomRequest.getRoomType())
+                                .capacity(roomRequest.getCapacity())
+                                .basePrice(roomRequest.getBasePrice())
+                                .quantity(roomRequest.getQuantity())
+                                .build();
+                Room savedRoom = roomRepository.save(room);
+                inventoryService.generateInitialInventory(savedRoom);
+                return savedRoom;
+        }
+
+        @Transactional(readOnly = true)
+        public List<PropertySearchResponse> searchProperties(SearchRequest request) {
+                // 1. Tính số đêm lưu trú
+                long duration = java.time.temporal.ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+
+                // 2. Gọi Repository lấy danh sách Homestay thỏa mãn
+                List<Property> properties = propertyRepository.searchAvailableProperties(
+                                request.getCity(),
+                                request.getCheckIn(),
+                                request.getCheckOut(),
+                                request.getGuests(),
+                                duration);
+
+                // 3. Map dữ liệu sang DTO (Ở dự án thực tế nên dùng MapStruct để code sạch hơn)
+                return properties.stream().map(p -> {
+                        // Lọc lại các phòng thực sự còn trống của property này
+                        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(p.getId()).stream()
+                                        .filter(r -> r.getCapacity() >= request.getGuests())
+                                        // Lưu ý: Chỗ này cần gọi thêm một hàm check inventory của riêng phòng này
+                                        // để đảm bảo tính chính xác trước khi trả về
+                                        .map(r -> RoomSearchResponse.builder()
+                                                        .roomId(r.getId())
+                                                        .roomType(r.getRoomType())
+                                                        .price(r.getBasePrice())
+                                                        .capacity(r.getCapacity())
+                                                        .build())
+                                        .toList();
+
+                        return PropertySearchResponse.builder()
+                                        .propertyId(p.getId())
+                                        .propertyName(p.getName())
+                                        .address(p.getAddress())
+                                        .city(p.getCity())
+                                        .availableRooms(rooms)
+                                        .minPrice(rooms.stream().map(RoomSearchResponse::getPrice)
+                                                        .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO))
+                                        .build();
+                }).toList();
+        }
 
 }
