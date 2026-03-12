@@ -40,6 +40,7 @@ public class SecurityConfiguration {
                         // .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Các API khác yêu cầu phải đăng nhập
+                        .requestMatchers("/api/v1/payments/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Không lưu trữ session (Session Creation Policy = STATELESS)
