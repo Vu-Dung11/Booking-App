@@ -25,6 +25,4 @@ public class AuthController {
         AuthResponse data = authService.login(loginRequest);
         return ApiResponse.success(data);
     }
-
-
 }

@@ -7,10 +7,7 @@ import com.example.bookingapp.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/bookings")
@@ -25,4 +22,13 @@ public class BookingController {
         Booking booking = bookingService.createBooking(request);
         return ApiResponse.success(booking);
     }
+
+    @PostMapping("/{id}/booking-completed")
+    public ApiResponse<String> confirmCheckOut(@PathVariable Long id) {
+        // Nếu CheckOutCompltedBooking gặp lỗi và throw AppException,
+        // GlobalExceptionHandler sẽ tự động "hứng" lỗi đó và trả về JSON lỗi phù hợp.
+        bookingService.checkOutCompltedBooking(id);
+        return ApiResponse.success("Confirm Check Out Successfully");
+    }
+
 }

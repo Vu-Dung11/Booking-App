@@ -10,17 +10,14 @@ import com.example.bookingapp.form.BookingRequest;
 import com.example.bookingapp.repository.BookingRepository;
 import com.example.bookingapp.repository.RoomInventoryRepository;
 import com.example.bookingapp.repository.RoomRepository;
-import com.example.bookingapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import com.example.bookingapp.utils.SecurityUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +37,7 @@ public class BookingService {
     private final RoomInventoryRepository inventoryRepository;
     private final RoomRepository roomRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final UserRepository userRepository;
+    private final SecurityUtils securityUtils;
 
     // SELF-INJECTION: Dùng để gọi method nội bộ QUA Spring Proxy
     // Tránh vấn đề self-invocation khiến @Transactional bị bỏ qua
@@ -48,16 +45,6 @@ public class BookingService {
     @Autowired
     private BookingService self;
 
-    private User getCurrentGuest() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            throw new AppException(ErrorCode.USER_NOT_AUTHENTICATED);
-        }
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    }
 
     // BẮT BUỘC CÓ @Transactional để kích hoạt Pessimistic Lock và Rollback khi lỗi
     @Transactional
@@ -65,10 +52,10 @@ public class BookingService {
         // 1. Validate ngày tháng
         if (!request.getCheckIn().isBefore(request.getCheckOut())) {
             throw new AppException(ErrorCode.CHECK_OUT_MUST_BE_AFTER_CHECK_IN); // "Ngày trả phòng phải sau ngày nhận
-                                                                                // phòng"
+            // phòng"
         }
 
-        User guest = getCurrentGuest();
+        User guest = securityUtils.getCurrentUser();
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_INPUT)); // Không tìm thấy phòng
 
@@ -191,6 +178,34 @@ public class BookingService {
                 log.error("Lỗi khi dọn dẹp đơn hàng {}: {}", booking.getId(), e.getMessage());
             }
         }
+    }
+
+    @Transactional
+    public void autoCompleteBookings() {
+        LocalDate today = LocalDate.now();
+
+        List<Booking> bookingsToComplete = bookingRepository
+                .findAllByStatusAndCheckOutDateLessThanEqual(Booking.BookingStatus.CONFIRMED, today);
+        for (Booking booking : bookingsToComplete) {
+            booking.setStatus(Booking.BookingStatus.COMPLETED);
+        }
+        bookingRepository.saveAll(bookingsToComplete);
+
+        log.info("Đã tự động chuyển {} đơn hàng sang trạng thái COMPLETED.", bookingsToComplete.size());
+    }
+
+    @Scheduled(cron = "0 0 14 * * ?")
+    public void runAutoCheckout() {
+        log.info("Bắt đầu tiến trình tự động Check-out các đơn hàng đến hạn...");
+        self.autoCompleteBookings();
+    }
+
+    public void checkOutCompltedBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Lỗi: không tìm thấy booking"));
+        if (booking.getStatus() != Booking.BookingStatus.CONFIRMED)
+            throw new AppException(ErrorCode.BOOKING_NOT_FOUND);
+        booking.setStatus(Booking.BookingStatus.COMPLETED);
+        bookingRepository.save(booking);
     }
 
     @Scheduled(cron = "0 */5 * * * *")

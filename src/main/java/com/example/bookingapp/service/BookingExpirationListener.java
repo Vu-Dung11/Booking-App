@@ -1,9 +1,5 @@
 package com.example.bookingapp.service;
 
-import com.example.bookingapp.entity.Booking;
-import com.example.bookingapp.entity.RoomInventory;
-import com.example.bookingapp.repository.BookingRepository;
-import com.example.bookingapp.repository.RoomInventoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
@@ -11,13 +7,12 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 
 @Slf4j
 @Component
 public class BookingExpirationListener extends KeyExpirationEventMessageListener {
     private final BookingService bookingService;
+
     public BookingExpirationListener(RedisMessageListenerContainer listenerContainer,
                                      BookingService bookingService) {
         super(listenerContainer);
