@@ -1,0 +1,34 @@
+package com.example.bookingapp.configuration.enm;
+
+
+import lombok.Getter;
+
+@Getter
+public enum ErrorCode {
+
+    USER_NOT_FOUND(404, "Không tìm thấy người dùng"),
+    FILE_EMPTY(511, "Không nhận được file ảnh"),
+    ROOM_FULLY_BOOKED(400, "Phòng đã được đặt hết trong khoảng thời gian này"),
+    UNAUTHORIZED(401, "Bạn không có quyền"),
+    INVALID_INPUT(400, "Dữ liệu đầu vào không hợp lệ"),
+    CHECK_OUT_MUST_BE_AFTER_CHECK_IN(506,"ngày nhận phòng phải trước ngày trả phòng"),
+    INVALID_PASSWORD_OR_EMAIL(405, "Sai mật khẩu hoặc email"),
+    ROOM_IS_NOT_FOUND(507,"Không tìm thấy phòng với id đó"),
+    USER_NOT_AUTHENTICATED(405, "User not authenticated"),
+    PROPERTY_NOT_FOUND(505, "Không tìm thấy homestay"),
+    BOOKING_NOT_FOUND(506, "Không tìm thấy Booking"),
+    NOT_YOUR_BOOKING(507, "Bạn không thể đánh giá đơn hàng của người khác"),
+    NOT_IN_PENDING_STATUS(510, "Đơn hàng không ở trạng thái chờ thanh toán"),
+    BOOKING_IS_NOT_COMPLETED(508, " Bạn chỉ được đánh giá sau khi đã hoàn tất chuyến đi (Check-out)"),
+    EXISTED_REVIEW_FOR_BOOKING(509,  "Đơn hàng này đã được đánh giá trước đó");
+
+    private final int code;
+    private final String message;
+
+    ErrorCode(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+
+}

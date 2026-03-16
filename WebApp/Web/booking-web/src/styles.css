@@ -1,1 +1,51 @@
 /* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #6366f1; /* Indigo 500 */
+  --secondary-color: #a855f7; /* Purple 500 */
+  --success-color: #10b981; /* Emerald 500 */
+  --warning-color: #f59e0b; /* Amber 500 */
+  --danger-color: #ef4444; /* Red 500 */
+  
+  --bg-color: #f8fafc; /* Slate 50 */
+  --sidebar-bg: #ffffff;
+  --surface-color: #ffffff;
+  
+  --text-primary: #0f172a; /* Slate 900 */
+  --text-secondary: #64748b; /* Slate 500 */
+  --text-tertiary: #94a3b8; /* Slate 400 */
+  
+  --border-color: #e2e8f0; /* Slate 200 */
+}
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar for a premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2);
+}

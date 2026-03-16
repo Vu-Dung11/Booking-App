@@ -1,0 +1,66 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Property Management</h1>
+    <p class="page-subtitle">View and manage all registered properties and accommodations</p>
+  </div>
+  <button class="btn btn-primary">
+    <span class="icon">+</span> Add Property
+  </button>
+</div>
+
+<div class="filters-bar">
+  <input type="text" class="search-input" placeholder="Search by name, city, or host..." />
+  <div class="filter-actions">
+    <select class="filter-select">
+      <option value="ALL">All Statuses</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+    <select class="filter-select">
+      <option value="ALL">All Cities</option>
+      <option value="DANANG">Da Nang</option>
+      <option value="DALAT">Da Lat</option>
+      <option value="HCM">Ho Chi Minh</option>
+    </select>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="loading-state">
+  <p>Loading properties...</p>
+</div>
+
+<div *ngIf="!isLoading && properties.length === 0" class="empty-state">
+  <p>No properties found.</p>
+</div>
+
+<div class="property-grid" *ngIf="!isLoading && properties.length > 0">
+  <div class="property-card" *ngFor="let property of properties">
+    <div class="card-header">
+      <div class="status-badge" [ngClass]="property.isActive ? 'status-active' : 'status-inactive'">
+        {{ property.isActive ? 'Active' : 'Inactive' }}
+      </div>
+      <div class="card-image-placeholder">
+        <span class="icon">🏠</span>
+      </div>
+    </div>
+    
+    <div class="card-body">
+      <h3 class="property-title" [title]="property.name">{{ property.name }}</h3>
+      <p class="property-location">📍 {{ property.city }}, {{ property.country }}</p>
+      
+      <div class="host-info">
+        <div class="host-avatar">{{ property.host.fullName.charAt(0) }}</div>
+        <div class="host-details">
+          <span class="host-label">Hosted by</span>
+          <span class="host-name">{{ property.host.fullName }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-footer">
+      <button class="btn-icon btn-view" title="View Details">👁️</button>
+      <button class="btn-icon btn-edit" title="Edit Property">✏️</button>
+      <button class="btn-icon btn-delete" title="Delete Property">🗑️</button>
+    </div>
+  </div>
+</div>

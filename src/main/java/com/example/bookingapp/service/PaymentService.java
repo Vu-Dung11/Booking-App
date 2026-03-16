@@ -2,13 +2,13 @@ package com.example.bookingapp.service;
 
 
 import com.example.bookingapp.dto.PaymentCallbackRequest;
-import com.example.bookingapp.enm.ErrorCode;
+import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Payment;
-import com.example.bookingapp.exception.AppException;
+import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.repository.BookingRepository;
 import com.example.bookingapp.repository.PaymentRepository;
-import com.example.bookingapp.utils.VNPayUtil;
+import com.example.bookingapp.configuration.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,10 +47,10 @@ public class PaymentService {
 
     public String createVnPayUrl(Long bookingId, HttpServletRequest request) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
 
         if (booking.getStatus() != Booking.BookingStatus.PENDING) {
-            throw new RuntimeException("Đơn hàng không ở trạng thái chờ thanh toán");
+            throw new AppException(ErrorCode.NOT_IN_PENDING_STATUS);
         }
 
         // Các tham số bắt buộc của VNPay

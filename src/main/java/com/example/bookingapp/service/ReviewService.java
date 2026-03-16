@@ -3,16 +3,16 @@ package com.example.bookingapp.service;
 
 
 
-import com.example.bookingapp.enm.ErrorCode;
+import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Review;
 import com.example.bookingapp.entity.User;
-import com.example.bookingapp.exception.AppException;
+import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.form.ReviewRequest;
 import com.example.bookingapp.repository.BookingRepository;
 import com.example.bookingapp.repository.ReviewRepository;
-import com.example.bookingapp.utils.SecurityUtils;
+import com.example.bookingapp.configuration.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,0 +1,99 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Booking Management</h1>
+    <p class="page-subtitle">Oversee all reservation activities and statuses</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline">
+      <span class="icon">📥</span> Export CSV
+    </button>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="table-actions">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Search by booking ID or guest name..." />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select">
+        <option value="ALL">All Statuses</option>
+        <option value="PENDING">Pending</option>
+        <option value="CONFIRMED">Confirmed</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="glass-table">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Guest Info</th>
+          <th>Property & Room</th>
+          <th>Dates</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading">
+          <td colspan="7" class="loading-cell">Loading bookings data...</td>
+        </tr>
+        <tr *ngIf="!isLoading && bookings.length === 0">
+          <td colspan="7" class="empty-cell">No bookings found matching your criteria.</td>
+        </tr>
+        
+        <tr *ngFor="let booking of bookings" class="table-row">
+          <td class="font-medium">#{{ booking.id }}</td>
+          <td>
+            <div class="info-cell">
+              <div class="avatar-sm">{{ booking.guest.fullName.charAt(0) }}</div>
+              <div class="info-text">
+                <span class="primary-text">{{ booking.guest.fullName }}</span>
+                <span class="secondary-text">{{ booking.guest.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="info-text">
+              <span class="primary-text" [title]="booking.room.property.name">{{ booking.room.property.name }}</span>
+              <span class="secondary-text">{{ booking.roomQuantity }}x {{ booking.room.roomType }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="info-text">
+              <span class="primary-text">{{ booking.checkInDate | date:'MMM d, y' }} &rarr;</span>
+              <span class="secondary-text">{{ booking.checkOutDate | date:'MMM d, y' }}</span>
+            </div>
+          </td>
+          <td class="font-semibold">{{ booking.totalPrice | currency:'USD':'symbol':'1.2-2' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+              <span class="status-dot"></span>
+              {{ booking.status }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-action check" title="Confirm Booking" *ngIf="booking.status === 'PENDING'">✓</button>
+            <button class="btn-action cross" title="Cancel Booking" *ngIf="booking.status === 'PENDING' || booking.status === 'CONFIRMED'">✕</button>
+            <button class="btn-action view" title="View Details">👁️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="pagination-footer">
+    <span class="results-count">Showing 1 to {{bookings.length}} of {{bookings.length}} results</span>
+    <div class="pagination-controls">
+      <button class="page-btn" disabled>&lt;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">&gt;</button>
+    </div>
+  </div>
+</div>

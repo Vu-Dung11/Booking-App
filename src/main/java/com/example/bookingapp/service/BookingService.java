@@ -1,11 +1,11 @@
 package com.example.bookingapp.service;
 
-import com.example.bookingapp.enm.ErrorCode;
+import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Room;
 import com.example.bookingapp.entity.RoomInventory;
 import com.example.bookingapp.entity.User;
-import com.example.bookingapp.exception.AppException;
+import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.form.BookingRequest;
 import com.example.bookingapp.repository.BookingRepository;
 import com.example.bookingapp.repository.RoomInventoryRepository;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import com.example.bookingapp.utils.SecurityUtils;
+import com.example.bookingapp.configuration.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;

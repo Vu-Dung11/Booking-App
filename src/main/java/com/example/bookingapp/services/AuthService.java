@@ -1,13 +1,13 @@
 package com.example.bookingapp.services;
 
 import com.example.bookingapp.dto.AuthResponse;
-import com.example.bookingapp.enm.ErrorCode;
+import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.entity.User;
-import com.example.bookingapp.exception.AppException;
+import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.form.LoginRequest;
 import com.example.bookingapp.form.RegisterRequest;
 import com.example.bookingapp.repository.UserRepository;
-import com.example.bookingapp.utils.JwtUtil;
+import com.example.bookingapp.configuration.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

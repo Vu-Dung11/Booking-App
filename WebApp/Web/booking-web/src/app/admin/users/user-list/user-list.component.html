@@ -1,0 +1,74 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">User Management</h1>
+    <p class="page-subtitle">Manage all users across the platform</p>
+  </div>
+  <button class="btn btn-primary">
+    <span class="icon">+</span> Add New User
+  </button>
+</div>
+
+<div class="table-container">
+  <div class="table-actions">
+    <input type="text" class="search-input" placeholder="Search users by name, email..." />
+    <select class="filter-select">
+      <option value="ALL">All Roles</option>
+      <option value="ADMIN">Admin</option>
+      <option value="HOST">Host</option>
+      <option value="GUEST">Guest</option>
+    </select>
+  </div>
+
+  <table class="glass-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User Info</th>
+        <th>Role</th>
+        <th>Phone</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="isLoading">
+        <td colspan="5" class="text-center py-4">Loading users...</td>
+      </tr>
+      <tr *ngIf="!isLoading && users.length === 0">
+        <td colspan="5" class="text-center py-4">No users found.</td>
+      </tr>
+      <tr *ngFor="let user of users">
+        <td>#{{ user.id }}</td>
+        <td>
+          <div class="user-info-cell">
+            <div class="user-avatar">{{ user.fullName.charAt(0) }}</div>
+            <div>
+              <div class="user-name">{{ user.fullName }}</div>
+              <div class="user-email">{{ user.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="badge" [ngClass]="'badge-' + user.role.toLowerCase()">
+            {{ user.role }}
+          </span>
+        </td>
+        <td>{{ user.phoneNumber || 'N/A' }}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-icon" title="Edit">✏️</button>
+            <button class="btn-icon btn-icon-danger" title="Delete">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div class="pagination">
+    <span class="page-info">Showing 1 to 10 of {{users.length}} entries</span>
+    <div class="page-buttons">
+      <button class="btn-page" disabled>Previous</button>
+      <button class="btn-page active">1</button>
+      <button class="btn-page">Next</button>
+    </div>
+  </div>
+</div>

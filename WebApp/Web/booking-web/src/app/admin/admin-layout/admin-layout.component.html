@@ -1,0 +1,41 @@
+<div class="admin-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Booking Admin</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+        <span class="icon">👥</span> Users
+      </a>
+      <a routerLink="/admin/properties" routerLinkActive="active" class="nav-item">
+        <span class="icon">🏨</span> Properties
+      </a>
+      <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-item">
+        <span class="icon">📅</span> Bookings
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="header-search">
+        <input type="text" placeholder="Search..." />
+      </div>
+      <div class="header-profile">
+        <div class="avatar">A</div>
+        <span>Admin User</span>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="admin-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
