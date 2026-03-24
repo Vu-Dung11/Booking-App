@@ -30,5 +30,18 @@ public class BookingController {
         bookingService.checkOutCompltedBooking(id);
         return ApiResponse.success("Confirm Check Out Successfully");
     }
+    @GetMapping
+    public ApiResponse<org.springframework.data.domain.Page<Booking>> getAllBookings(
+            @RequestParam(required = false) Booking.BookingStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return ApiResponse.success(bookingService.getAllBookings(status, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Booking> getBookingById(@PathVariable Long id) {
+        return ApiResponse.success(bookingService.getBookingById(id));
+    }
 
 }

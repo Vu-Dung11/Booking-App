@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
+// class for listen booking expiration
 public class BookingExpirationListener extends KeyExpirationEventMessageListener {
     private final BookingService bookingService;
 

@@ -9,20 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>{
-    // ADMIN, EMPLOYEE, MÂNGER
-    // A-1
-    // A-2
-    // E-1
-    // M-1
-//
-//    long countByRole(User.Role role);
-//    User findByUsernameOrEmail(String username, String email);
-//
+
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
 
-
-
+    org.springframework.data.domain.Page<User> findByRole(User.Role role, org.springframework.data.domain.Pageable pageable);
 
 }

@@ -12,5 +12,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByStatusAndCreatedAtBefore(Booking.BookingStatus status, LocalDateTime timeout);
     // Tìm các đơn hàng đã xác nhận nhưng ngày Check-out đã qua (hoặc bằng ngày hiện tại)
     List<Booking> findAllByStatusAndCheckOutDateLessThanEqual(Booking.BookingStatus status, LocalDate date);
-
+    org.springframework.data.domain.Page<Booking> findByStatus(Booking.BookingStatus status, org.springframework.data.domain.Pageable pageable);
 }

@@ -42,5 +42,17 @@ public class PropertyController {
         List<PropertySearchResponse> results = propertyService.searchProperties(request);
         return ApiResponse.success(results);
     }
+    @GetMapping
+    public ApiResponse<org.springframework.data.domain.Page<Property>> getAllProperties(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return ApiResponse.success(propertyService.getAllProperties(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Property> getPropertyById(@PathVariable Long id) {
+        return ApiResponse.success(propertyService.getPropertyById(id));
+    }
 
 }

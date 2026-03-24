@@ -16,6 +16,8 @@ import com.example.bookingapp.configuration.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -111,5 +113,14 @@ public class PropertyService {
                     .build();
         }).toList();
     }
+    @Transactional(readOnly = true)
+    public Page<Property> getAllProperties(Pageable pageable) {
+        return propertyRepository.findAll(pageable);
+    }
 
+    @Transactional(readOnly = true)
+    public Property getPropertyById(Long id) {
+        return propertyRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+    }
 }

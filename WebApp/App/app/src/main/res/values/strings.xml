@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">BookingApp</string>
+
+    <!-- Login screen -->
+    <string name="login_welcome_title">Chào mừng trở lại!</string>
+    <string name="login_welcome_subtitle">Đăng nhập để tiếp tục khám phá</string>
+    <string name="hint_email">Email hoặc số điện thoại</string>
+    <string name="hint_password">Mật khẩu</string>
+    <string name="btn_login">Đăng nhập</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="or_divider">Hoặc</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    <string name="btn_register">Đăng ký ngay</string>
+    <string name="login_with_google">Tiếp tục với Google</string>
 </resources>

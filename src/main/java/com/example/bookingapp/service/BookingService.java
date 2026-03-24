@@ -217,4 +217,17 @@ public class BookingService {
         log.info("Kết thúc tiến trình quét vét.");
     }
 
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Booking> getAllBookings(Booking.BookingStatus status, org.springframework.data.domain.Pageable pageable) {
+        if (status != null) {
+            return bookingRepository.findByStatus(status, pageable);
+        }
+        return bookingRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Booking getBookingById(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+    }
 }
