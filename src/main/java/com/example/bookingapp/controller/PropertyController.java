@@ -42,6 +42,7 @@ public class PropertyController {
         List<PropertySearchResponse> results = propertyService.searchProperties(request);
         return ApiResponse.success(results);
     }
+
     @GetMapping
     public ApiResponse<org.springframework.data.domain.Page<Property>> getAllProperties(
             @RequestParam(defaultValue = "0") int page,

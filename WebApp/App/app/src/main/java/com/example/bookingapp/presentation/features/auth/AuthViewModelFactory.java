@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.bookingapp.data.remote.RetrofitClient;
 import com.example.bookingapp.data.repository.AuthRepository;
 
-public class AuthViewModelFactory implements ViewModelProvider.Factory {
+public class AuthViewModelFactory implements ViewModelProvider.Factory{
 
     @NonNull
     @Override

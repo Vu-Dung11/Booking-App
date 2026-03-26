@@ -15,7 +15,6 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    // API nhận kết quả từ cổng thanh toán (IPN URL)
     @PostMapping("/callback")
     public ApiResponse<String> paymentCallback(@RequestBody PaymentCallbackRequest request) {
         paymentService.processPaymentCallback(request);
@@ -27,7 +26,6 @@ public class PaymentController {
         return ApiResponse.success(url);
     }
 
-    // API 2: VNPay gọi về sau khi khách thanh toán xong
     @GetMapping("/vnpay-return")
     public ApiResponse<String> vnpayReturn(HttpServletRequest request) {
         String result = paymentService.processVnPayReturn(request);

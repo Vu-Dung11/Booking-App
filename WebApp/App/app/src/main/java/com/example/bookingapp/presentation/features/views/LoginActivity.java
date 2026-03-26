@@ -1,18 +1,19 @@
-package com.example.bookingapp;
+package com.example.bookingapp.presentation.features.views;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.bookingapp.MainActivity;
+import com.example.bookingapp.R;
 import com.example.bookingapp.databinding.ActivityLoginBinding;
 import com.example.bookingapp.presentation.features.auth.AuthViewModel;
 import com.example.bookingapp.presentation.features.auth.AuthViewModelFactory;
 
-public class Login extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
     private AuthViewModel viewModel;
@@ -31,6 +32,12 @@ public class Login extends AppCompatActivity {
     }
 
     private void setupViews() {
+
+        binding.tvRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
+
         binding.btnLogin.setOnClickListener(v -> {
             String email = binding.etEmail.getText() != null
                     ? binding.etEmail.getText().toString().trim() : "";

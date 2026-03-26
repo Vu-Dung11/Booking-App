@@ -3,6 +3,7 @@ package com.example.bookingapp.data.remote;
 import com.example.bookingapp.data.model.ApiResponse;
 import com.example.bookingapp.data.model.auth.AuthResponse;
 import com.example.bookingapp.data.model.auth.LoginRequest;
+import com.example.bookingapp.data.model.auth.RegisterRequest;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -16,7 +17,7 @@ public interface ApiService {
     Call<ApiResponse<AuthResponse>> login(@Body LoginRequest request);
 
     @POST("api/v1/auth/register")
-    Call<ApiResponse<AuthResponse>> register(@Body Object request);
+    Call<ApiResponse<AuthResponse>> register(@Body RegisterRequest request);
 
     @GET("api/v1/properties")
     Call<ApiResponse<Object>> getAllProperties(

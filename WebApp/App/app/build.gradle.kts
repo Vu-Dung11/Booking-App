@@ -42,8 +42,9 @@ android {
 dependencies {
 
     // Kiến trúc MVVM (ViewModel & LiveData)
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-livedata:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime:2.8.7")
 
     // Retrofit & Gson để gọi API tới Backend
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
