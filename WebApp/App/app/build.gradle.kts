@@ -45,7 +45,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
     implementation("androidx.lifecycle:lifecycle-livedata:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime:2.8.7")
-
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     // Retrofit & Gson để gọi API tới Backend
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")

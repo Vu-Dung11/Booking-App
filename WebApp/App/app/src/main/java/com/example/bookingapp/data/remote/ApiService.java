@@ -1,9 +1,11 @@
 package com.example.bookingapp.data.remote;
 
 import com.example.bookingapp.data.model.ApiResponse;
+import com.example.bookingapp.data.model.PageResponse;
 import com.example.bookingapp.data.model.auth.AuthResponse;
 import com.example.bookingapp.data.model.auth.LoginRequest;
 import com.example.bookingapp.data.model.auth.RegisterRequest;
+import com.example.bookingapp.data.model.views.PropertyResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -20,10 +22,12 @@ public interface ApiService {
     Call<ApiResponse<AuthResponse>> register(@Body RegisterRequest request);
 
     @GET("api/v1/properties")
-    Call<ApiResponse<Object>> getAllProperties(
-        @Query("page") int page,
-        @Query("size") int size
+    Call<ApiResponse<PageResponse<PropertyResponse>>> getAllProperties(
+            @Query("page") int page,
+            @Query("size") int size
     );
+
+
 
     @GET("api/v1/properties/{id}")
     Call<ApiResponse<Object>> getPropertyById(@Path("id") Long id);

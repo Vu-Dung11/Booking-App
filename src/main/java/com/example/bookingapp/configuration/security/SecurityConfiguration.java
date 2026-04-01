@@ -4,6 +4,7 @@ package com.example.bookingapp.configuration.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,7 +38,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // Public các API liên quan đến xác thực và tìm kiếm chung
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        // .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
+                         .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/media/**").permitAll()
                         // Các API khác yêu cầu phải đăng nhập

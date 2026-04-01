@@ -71,6 +71,10 @@ public class LoginActivity extends AppCompatActivity {
                     binding.btnLogin.setEnabled(true);
                     binding.btnLogin.setText(getString(R.string.btn_login));
                     Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    getSharedPreferences("auth", MODE_PRIVATE)
+                            .edit()
+                            .putString("token", resource.data.getToken())
+                            .apply();
                     startActivity(new Intent(this, MainActivity.class));
                     finish();
                     break;

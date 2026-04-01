@@ -55,5 +55,6 @@ public class PropertyController {
     public ApiResponse<Property> getPropertyById(@PathVariable Long id) {
         return ApiResponse.success(propertyService.getPropertyById(id));
     }
+    
 
 }
