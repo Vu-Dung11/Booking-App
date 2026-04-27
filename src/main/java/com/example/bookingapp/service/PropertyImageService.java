@@ -30,7 +30,6 @@ public class PropertyImageService {
     private final UserRepository userRepository;
     private final SecurityUtils securityUtils;
 
-
     @Transactional
     public List<PropertyImage> uploadImagesForProperty(Long propertyId, List<MultipartFile> files) {
         User currentHost = securityUtils.getCurrentUser();

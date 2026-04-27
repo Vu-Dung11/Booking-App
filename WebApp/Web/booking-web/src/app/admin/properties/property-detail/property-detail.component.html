@@ -1,0 +1,99 @@
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <a routerLink="/admin/properties" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tat ca homestays
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Dang tai...</div>
+  } @else if (!property()) {
+    <div class="empty-state">Khong tim thay homestay.</div>
+  } @else {
+    <!-- Property Info -->
+    <div class="detail-header" appAnimateOnScroll>
+      <div class="detail-info">
+        <h1 class="detail-title">{{ property()!.name }}</h1>
+        <p class="detail-location">{{ property()!.address }}, {{ property()!.city }}, {{ property()!.country }}</p>
+        @if (property()!.description) {
+          <p class="detail-desc">{{ property()!.description }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Rooms Section -->
+    <div class="section" appAnimateOnScroll>
+      <div class="section-header">
+        <h2 class="section-title">Danh sach phong ({{ property()!.rooms?.length || 0 }})</h2>
+        <button class="btn-primary" (click)="openAddRoom()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Them phong
+        </button>
+      </div>
+
+      @if (!property()!.rooms || property()!.rooms.length === 0) {
+        <div class="empty-rooms">Chua co phong nao. Hay them phong cho homestay nay.</div>
+      } @else {
+        <div class="rooms-grid stagger-children">
+          @for (room of property()!.rooms; track room.roomId) {
+            <div class="room-card" appAnimateOnScroll>
+              <div class="room-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 21V11L12 5L21 11V21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="8" y="14" width="8" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+              </div>
+              <h3 class="room-type">{{ room.roomType }}</h3>
+              <div class="room-details">
+                <div class="room-detail-item">
+                  <span class="detail-label">Suc chua</span>
+                  <span class="detail-value">{{ room.capacity }} nguoi</span>
+                </div>
+                <div class="room-detail-item">
+                  <span class="detail-label">Gia</span>
+                  <span class="detail-value price">{{ formatPrice(room.price) }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Add Room Modal -->
+    @if (showAddRoom()) {
+      <div class="modal-overlay" (click)="showAddRoom.set(false)">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Them phong moi</h2>
+            <button class="btn-close" (click)="showAddRoom.set(false)">&times;</button>
+          </div>
+          <form (ngSubmit)="submitRoom()" class="modal-form">
+            <div class="form-group">
+              <label>Loai phong *</label>
+              <input type="text" [(ngModel)]="roomForm.roomType" name="roomType" placeholder="VD: Deluxe, Standard..." />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Suc chua (nguoi)</label>
+                <input type="number" [(ngModel)]="roomForm.capacity" name="capacity" min="1" />
+              </div>
+              <div class="form-group">
+                <label>So luong phong</label>
+                <input type="number" [(ngModel)]="roomForm.quantity" name="quantity" min="1" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Gia co ban (VND) *</label>
+              <input type="number" [(ngModel)]="roomForm.basePrice" name="basePrice" min="0" placeholder="500000" />
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="showAddRoom.set(false)">Huy</button>
+              <button type="submit" class="btn-primary" [disabled]="isAddingRoom()">
+                @if (isAddingRoom()) { Dang them... } @else { Them phong }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  }
+</div>

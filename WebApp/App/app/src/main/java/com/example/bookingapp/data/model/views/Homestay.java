@@ -1,6 +1,7 @@
 package com.example.bookingapp.data.model.views;
 
 public class Homestay {
+    private Long propertyId;
     private String imageUrl;
     private String name;
     private String location;
@@ -8,13 +9,22 @@ public class Homestay {
     private Double rating;
     private boolean isFavorite;
 
-    public Homestay(String imageUrl, String name, String location, Double price, Double rating, boolean isFavorite) {
+    public Homestay(Long propertyId, String imageUrl, String name, String location, Double price, Double rating, boolean isFavorite) {
+        this.propertyId = propertyId;
         this.imageUrl = imageUrl;
         this.name = name;
         this.location = location;
         this.price = price;
         this.rating = rating;
         this.isFavorite = isFavorite;
+    }
+
+    public Long getPropertyId() {
+        return propertyId;
+    }
+
+    public void setPropertyId(Long propertyId) {
+        this.propertyId = propertyId;
     }
 
     public String getImageUrl() {

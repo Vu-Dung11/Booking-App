@@ -5,6 +5,7 @@ import com.example.bookingapp.data.model.PageResponse;
 import com.example.bookingapp.data.model.auth.AuthResponse;
 import com.example.bookingapp.data.model.auth.LoginRequest;
 import com.example.bookingapp.data.model.auth.RegisterRequest;
+import com.example.bookingapp.data.model.views.PropertyDetailResponse;
 import com.example.bookingapp.data.model.views.PropertyResponse;
 
 import retrofit2.Call;
@@ -27,7 +28,8 @@ public interface ApiService {
             @Query("size") int size
     );
 
-
+    @GET("api/v1/properties/{id}/detail")
+    Call<ApiResponse<PropertyDetailResponse>> getPropertyDetail(@Path("id") Long id);
 
     @GET("api/v1/properties/{id}")
     Call<ApiResponse<Object>> getPropertyById(@Path("id") Long id);

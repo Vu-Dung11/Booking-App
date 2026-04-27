@@ -31,8 +31,6 @@ public class RoomImageController {
         }
 
         List<RoomImage> uploadedImages = roomImageService.uploadImagesForRoom(roomId, files);
-
-
         List<Map<String, Object>> responseData = uploadedImages.stream()
                 .map(img -> Map.<String, Object>of(
                         "id", img.getId(),
@@ -40,7 +38,6 @@ public class RoomImageController {
                         "isThumbnail", img.getIsThumbnail()
                 ))
                 .toList();
-
         return ApiResponse.success(responseData);
     }
 }

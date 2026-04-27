@@ -1,0 +1,81 @@
+<div class="login-page">
+  <div class="login-left">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="12" fill="#7C5CFC"/>
+          <path d="M12 20L18 14L24 20L18 26L12 20Z" fill="white" opacity="0.6"/>
+          <path d="M16 20L22 14L28 20L22 26L16 20Z" fill="white"/>
+        </svg>
+        <span class="brand-name">StayManager</span>
+      </div>
+      <h1 class="brand-heading">Quan ly homestay<br/>don gian & hieu qua</h1>
+      <p class="brand-desc">Nen tang giup chu homestay quan ly dat phong, thanh toan va van hanh mot cach chuyen nghiep.</p>
+      <div class="brand-features">
+        <div class="feature-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16.667 5L7.5 14.167 3.333 10" stroke="#7C5CFC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Quan ly dat phong real-time</span>
+        </div>
+        <div class="feature-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16.667 5L7.5 14.167 3.333 10" stroke="#7C5CFC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Theo doi thanh toan VNPay</span>
+        </div>
+        <div class="feature-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16.667 5L7.5 14.167 3.333 10" stroke="#7C5CFC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Dashboard thong ke chi tiet</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>Dang nhap</h2>
+        <p>Nhap thong tin tai khoan de tiep tuc</p>
+      </div>
+
+      @if (error()) {
+        <div class="error-message">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3M8 10.5h.007" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          {{ error() }}
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="admin@example.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mat khau</label>
+          <input
+            id="password"
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Nhap mat khau"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            Dang xu ly...
+          } @else {
+            Dang nhap
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -26,6 +26,4 @@ public class ApiResponse<T> {
                 .message(message)
                 .build();
     }
-
-
 }

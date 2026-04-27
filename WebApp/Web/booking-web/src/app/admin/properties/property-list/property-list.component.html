@@ -1,66 +1,111 @@
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Property Management</h1>
-    <p class="page-subtitle">View and manage all registered properties and accommodations</p>
-  </div>
-  <button class="btn btn-primary">
-    <span class="icon">+</span> Add Property
-  </button>
-</div>
-
-<div class="filters-bar">
-  <input type="text" class="search-input" placeholder="Search by name, city, or host..." />
-  <div class="filter-actions">
-    <select class="filter-select">
-      <option value="ALL">All Statuses</option>
-      <option value="ACTIVE">Active</option>
-      <option value="INACTIVE">Inactive</option>
-    </select>
-    <select class="filter-select">
-      <option value="ALL">All Cities</option>
-      <option value="DANANG">Da Nang</option>
-      <option value="DALAT">Da Lat</option>
-      <option value="HCM">Ho Chi Minh</option>
-    </select>
-  </div>
-</div>
-
-<div *ngIf="isLoading" class="loading-state">
-  <p>Loading properties...</p>
-</div>
-
-<div *ngIf="!isLoading && properties.length === 0" class="empty-state">
-  <p>No properties found.</p>
-</div>
-
-<div class="property-grid" *ngIf="!isLoading && properties.length > 0">
-  <div class="property-card" *ngFor="let property of properties">
-    <div class="card-header">
-      <div class="status-badge" [ngClass]="property.isActive ? 'status-active' : 'status-inactive'">
-        {{ property.isActive ? 'Active' : 'Inactive' }}
-      </div>
-      <div class="card-image-placeholder">
-        <span class="icon">🏠</span>
-      </div>
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <div>
+      <h1 class="page-title">Quan ly Homestay</h1>
+      <p class="page-subtitle">Quan ly tat ca homestay tren he thong</p>
     </div>
-    
-    <div class="card-body">
-      <h3 class="property-title" [title]="property.name">{{ property.name }}</h3>
-      <p class="property-location">📍 {{ property.city }}, {{ property.country }}</p>
-      
-      <div class="host-info">
-        <div class="host-avatar">{{ property.host.fullName.charAt(0) }}</div>
-        <div class="host-details">
-          <span class="host-label">Hosted by</span>
-          <span class="host-name">{{ property.host.fullName }}</span>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Them homestay
+    </button>
+  </div>
+
+  <div class="toolbar" appAnimateOnScroll>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Tim kiem theo ten, thanh pho..."
+      [(ngModel)]="searchTerm"
+    />
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state" appAnimateOnScroll>Dang tai du lieu...</div>
+  } @else if (filteredProperties.length === 0) {
+    <div class="empty-state" appAnimateOnScroll>Chua co homestay nao.</div>
+  } @else {
+    <div class="property-grid stagger-children">
+      @for (property of filteredProperties; track property.id) {
+        <div class="property-card" appAnimateOnScroll>
+          <div class="card-image">
+            <div class="image-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="status-chip" [class.active]="property.isActive" [class.inactive]="!property.isActive">
+              {{ property.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">{{ property.name }}</h3>
+            <p class="card-location">{{ property.city }}, {{ property.country }}</p>
+            @if (property.host) {
+              <div class="host-row">
+                <div class="host-avatar">{{ property.host.fullName?.charAt(0) || 'H' }}</div>
+                <div class="host-info">
+                  <span class="host-label">Chu nha</span>
+                  <span class="host-name">{{ property.host.fullName }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="card-footer">
+            <a [routerLink]="['/admin/properties', property.id]" class="btn-link">Chi tiet</a>
+          </div>
         </div>
+      }
+    </div>
+
+    <div class="pagination-bar" appAnimateOnScroll>
+      <span class="page-info">{{ totalElements() }} homestays</span>
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&lt;</button>
+        @for (p of pages; track p) {
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&gt;</button>
       </div>
     </div>
-    
-    <div class="card-footer">
-      <button class="btn-icon btn-view" title="View Details">👁️</button>
-      <button class="btn-icon btn-edit" title="Edit Property">✏️</button>
-      <button class="btn-icon btn-delete" title="Delete Property">🗑️</button>
+  }
+
+  <!-- Create Modal -->
+  @if (showCreateModal()) {
+    <div class="modal-overlay" (click)="closeCreateModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Them homestay moi</h2>
+          <button class="btn-close" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <form (ngSubmit)="submitCreate()" class="modal-form">
+          <div class="form-group">
+            <label>Ten homestay *</label>
+            <input type="text" [(ngModel)]="createForm.name" name="name" placeholder="VD: Cozy Mountain Cabin" />
+          </div>
+          <div class="form-group">
+            <label>Mo ta</label>
+            <textarea [(ngModel)]="createForm.description" name="description" rows="3" placeholder="Mo ta ve homestay..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dia chi *</label>
+              <input type="text" [(ngModel)]="createForm.address" name="address" placeholder="123 Duong ABC" />
+            </div>
+            <div class="form-group">
+              <label>Thanh pho *</label>
+              <input type="text" [(ngModel)]="createForm.city" name="city" placeholder="Da Nang" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Quoc gia</label>
+            <input type="text" [(ngModel)]="createForm.country" name="country" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeCreateModal()">Huy</button>
+            <button type="submit" class="btn-primary" [disabled]="isCreating()">
+              @if (isCreating()) { Dang tao... } @else { Tao homestay }
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  }
 </div>

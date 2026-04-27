@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Property {
+public class  Property {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

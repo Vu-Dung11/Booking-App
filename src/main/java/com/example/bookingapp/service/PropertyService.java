@@ -1,5 +1,6 @@
 package com.example.bookingapp.service;
 
+import com.example.bookingapp.dto.PropertyDetailResponse;
 import com.example.bookingapp.dto.PropertySearchResponse;
 import com.example.bookingapp.dto.RoomSearchResponse;
 import com.example.bookingapp.configuration.enm.ErrorCode;
@@ -122,5 +123,30 @@ public class PropertyService {
     public Property getPropertyById(Long id) {
         return propertyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public PropertyDetailResponse getPropertyDetail(Long id) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+
+        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
+                .map(r -> RoomSearchResponse.builder()
+                        .roomId(r.getId())
+                        .roomType(r.getRoomType())
+                        .price(r.getBasePrice())
+                        .capacity(r.getCapacity())
+                        .build())
+                .toList();
+
+        return PropertyDetailResponse.builder()
+                .propetyId(property.getId())
+                .name(property.getName())
+                .description(property.getDescription())
+                .address(property.getAddress())
+                .city(property.getCity())
+                .country(property.getCountry())
+                .rooms(rooms)
+                .build();
     }
 }

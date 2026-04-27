@@ -1,11 +1,20 @@
 import { Routes } from '@angular/router';
-import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
+  },
+  {
     path: 'admin',
-    component: AdminLayoutComponent,
+    loadComponent: () => import('./admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    canActivate: [authGuard],
     children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
       {
         path: 'users',
         loadComponent: () => import('./admin/users/user-list/user-list.component').then(m => m.UserListComponent)
@@ -15,19 +24,35 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/properties/property-list/property-list.component').then(m => m.PropertyListComponent)
       },
       {
+        path: 'properties/:id',
+        loadComponent: () => import('./admin/properties/property-detail/property-detail.component').then(m => m.PropertyDetailComponent)
+      },
+      {
         path: 'bookings',
         loadComponent: () => import('./admin/bookings/booking-list/booking-list.component').then(m => m.BookingListComponent)
       },
       {
+        path: 'payments',
+        loadComponent: () => import('./admin/payments/payment-list/payment-list.component').then(m => m.PaymentListComponent)
+      },
+      {
+        path: 'reviews',
+        loadComponent: () => import('./admin/reviews/review-list/review-list.component').then(m => m.ReviewListComponent)
+      },
+      {
         path: '',
-        redirectTo: 'users',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: 'admin',
+    redirectTo: 'login',
     pathMatch: 'full'
+  },
+  {
+    path: '**',
+    redirectTo: 'login'
   }
 ];

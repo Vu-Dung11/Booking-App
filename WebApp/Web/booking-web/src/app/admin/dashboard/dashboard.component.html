@@ -1,0 +1,175 @@
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Tong quan he thong quan ly homestay</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid stagger-children">
+    <div class="stat-card" appAnimateOnScroll>
+      <div class="stat-icon icon-primary">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M3 17V8.5L10 3L17 8.5V17H12V12H8V17H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalProperties }}</span>
+        <span class="stat-label">Homestays</span>
+      </div>
+    </div>
+
+    <div class="stat-card" appAnimateOnScroll>
+      <div class="stat-icon icon-blue">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8H17M7 2V5M13 2V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalBookings }}</span>
+        <span class="stat-label">Tong dat phong</span>
+      </div>
+    </div>
+
+    <div class="stat-card" appAnimateOnScroll>
+      <div class="stat-icon icon-green">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.2386 6.68629 12 10 12C13.3137 12 16 14.2386 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalUsers }}</span>
+        <span class="stat-label">Nguoi dung</span>
+      </div>
+    </div>
+
+    <div class="stat-card" appAnimateOnScroll>
+      <div class="stat-icon icon-orange">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6V10L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().pendingBookings }}</span>
+        <span class="stat-label">Cho xu ly</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Status Overview -->
+  <div class="section-row">
+    <div class="card booking-overview" appAnimateOnScroll>
+      <div class="card-header">
+        <h2 class="card-title">Trang thai dat phong</h2>
+      </div>
+      <div class="status-bars">
+        <div class="status-bar-item">
+          <div class="status-bar-info">
+            <span class="status-dot dot-warning"></span>
+            <span class="status-bar-label">Cho xu ly</span>
+            <span class="status-bar-value">{{ stats().pendingBookings }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-warning" [style.width.%]="stats().totalBookings ? (stats().pendingBookings / stats().totalBookings * 100) : 0"></div>
+          </div>
+        </div>
+        <div class="status-bar-item">
+          <div class="status-bar-info">
+            <span class="status-dot dot-primary"></span>
+            <span class="status-bar-label">Da xac nhan</span>
+            <span class="status-bar-value">{{ stats().confirmedBookings }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-primary" [style.width.%]="stats().totalBookings ? (stats().confirmedBookings / stats().totalBookings * 100) : 0"></div>
+          </div>
+        </div>
+        <div class="status-bar-item">
+          <div class="status-bar-info">
+            <span class="status-dot dot-success"></span>
+            <span class="status-bar-label">Hoan thanh</span>
+            <span class="status-bar-value">{{ stats().completedBookings }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-success" [style.width.%]="stats().totalBookings ? (stats().completedBookings / stats().totalBookings * 100) : 0"></div>
+          </div>
+        </div>
+        <div class="status-bar-item">
+          <div class="status-bar-info">
+            <span class="status-dot dot-danger"></span>
+            <span class="status-bar-label">Da huy</span>
+            <span class="status-bar-value">{{ stats().cancelledBookings }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-danger" [style.width.%]="stats().totalBookings ? (stats().cancelledBookings / stats().totalBookings * 100) : 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card quick-actions" appAnimateOnScroll>
+      <div class="card-header">
+        <h2 class="card-title">Thao tac nhanh</h2>
+      </div>
+      <div class="action-grid">
+        <a routerLink="/admin/properties" class="action-item">
+          <div class="action-icon icon-primary">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <span>Them homestay</span>
+        </a>
+        <a routerLink="/admin/bookings" class="action-item">
+          <div class="action-icon icon-blue">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8H17" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <span>Xem dat phong</span>
+        </a>
+        <a routerLink="/admin/users" class="action-item">
+          <div class="action-icon icon-green">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.24 6.69 12 10 12C13.31 12 16 14.24 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <span>Nguoi dung</span>
+        </a>
+        <a routerLink="/admin/reviews" class="action-item">
+          <div class="action-icon icon-orange">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8L14 12L15 17.5L10 15L5 17.5L6 12L2 8L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </div>
+          <span>Danh gia</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Bookings -->
+  <div class="card" appAnimateOnScroll>
+    <div class="card-header">
+      <h2 class="card-title">Dat phong gan day</h2>
+      <a routerLink="/admin/bookings" class="card-link">Xem tat ca</a>
+    </div>
+    @if (isLoading()) {
+      <div class="loading-state">Dang tai du lieu...</div>
+    } @else if (recentBookings().length === 0) {
+      <div class="empty-state">Chua co dat phong nao.</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Khach</th>
+              <th>Homestay</th>
+              <th>Ngay</th>
+              <th>Trang thai</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (booking of recentBookings(); track booking.id) {
+              <tr>
+                <td class="fw-500">#{{ booking.id }}</td>
+                <td>{{ booking.guest?.fullName || 'N/A' }}</td>
+                <td>{{ booking.room?.property?.name || 'N/A' }}</td>
+                <td class="text-muted">{{ booking.checkInDate }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(booking.status)">{{ booking.status }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

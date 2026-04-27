@@ -22,7 +22,7 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        viewModel = new ViewModelProvider(this, new AuthViewModelFactory())
+        viewModel = new ViewModelProvider(this, new AuthViewModelFactory(this))
                 .get(AuthViewModel.class);
 
         setupViews();

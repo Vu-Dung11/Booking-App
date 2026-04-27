@@ -1,10 +1,16 @@
 package com.example.bookingapp.data.model.views;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.math.BigDecimal;
 
 public class PropertyResponse {
+    @SerializedName("id")
     private Long propertyId;
+
+    @SerializedName("name")
     private String propertyName;
+
     private String address;
     private String city;
     private BigDecimal minPrice;

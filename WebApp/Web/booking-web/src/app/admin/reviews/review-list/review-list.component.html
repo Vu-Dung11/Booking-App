@@ -1,0 +1,63 @@
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <div>
+      <h1 class="page-title">Danh gia</h1>
+      <p class="page-subtitle">Cac chuyen di da hoan thanh va co the duoc danh gia</p>
+    </div>
+  </div>
+
+  <div class="card" appAnimateOnScroll>
+    <div class="card-toolbar">
+      <span class="total-label">{{ totalElements() }} chuyen di hoan thanh</span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-state">Dang tai du lieu...</div>
+    } @else if (bookings().length === 0) {
+      <div class="empty-state">Chua co chuyen di nao hoan thanh.</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Khach hang</th>
+              <th>Homestay</th>
+              <th>Phong</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (booking of bookings(); track booking.id) {
+              <tr>
+                <td class="fw-500">#{{ booking.id }}</td>
+                <td>
+                  <div class="guest-cell">
+                    <div class="avatar-sm">{{ booking.guest?.fullName?.charAt(0) || '?' }}</div>
+                    <span class="guest-name">{{ booking.guest?.fullName || 'N/A' }}</span>
+                  </div>
+                </td>
+                <td class="text-secondary">{{ booking.room?.property?.name || 'N/A' }}</td>
+                <td class="text-secondary">{{ booking.room?.roomType || 'N/A' }}</td>
+                <td class="text-muted">{{ formatDate(booking.checkInDate) }}</td>
+                <td class="text-muted">{{ formatDate(booking.checkOutDate) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span class="footer-info">Trang {{ currentPage() + 1 }} / {{ totalPages() }}</span>
+        <div class="pagination">
+          <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&lt;</button>
+          @for (p of pages; track p) {
+            <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+          }
+          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&gt;</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,5 +1,7 @@
 package com.example.bookingapp.presentation.features.home;
 
+import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -11,6 +13,7 @@ import com.example.bookingapp.data.model.views.Category;
 import com.example.bookingapp.data.model.views.Homestay;
 import com.example.bookingapp.data.model.views.PropertyResponse;
 import com.example.bookingapp.databinding.FragmentHomeBinding;
+import com.example.bookingapp.presentation.features.views.PropertyDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,14 +56,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         });
         getBinding().rvCategory.setAdapter(categoryAdapter);
 
-// Data mẫu homestay
-        homestayList.add(new Homestay(null, "Homestay Đà Lạt", "Đà Lạt, Lâm Đồng", 850000.0, 4.8, false));
-        homestayList.add(new Homestay(null, "Villa Hội An", "Hội An, Quảng Nam", 1200000.0, 4.9, false));
-        homestayList.add(new Homestay(null, "Bungalow Phú Quốc", "Phú Quốc, Kiên Giang", 950000.0, 4.7, false));
-        homestayList.add(new Homestay(null, "Nhà gỗ Sapa", "Sapa, Lào Cai", 700000.0, 4.6, false));
-
         homestayAdapter = new HomestayAdapter(homestayList, homestay -> {
-            // TODO: mở màn chi tiết sau
+            if (homestay.getPropertyId() != null) {
+                Intent intent = new Intent(getContext(), PropertyDetailActivity.class);
+                intent.putExtra(PropertyDetailActivity.EXTRA_PROPERTY_ID, homestay.getPropertyId());
+                startActivity(intent);
+            }
         });
         getBinding().rvHomestay.setAdapter(homestayAdapter);
 
@@ -76,10 +77,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                         break;
 
                     case SUCCESS:
+                        Log.d("HOME", "Data: " + resource.data);
+                        Log.d("HOME", "Size: " + resource.data.getContent().size());
                         if (resource.data != null && resource.data.getContent() != null) {
                             homestayList.clear();
                             for (PropertyResponse p : resource.data.getContent()) {
                                 homestayList.add(new Homestay(
+                                        p.getPropertyId(),
                                         null,
                                         p.getPropertyName(),
                                         p.getCity() + ", " + p.getAddress(),

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.bookingapp.core.utils.Resource;
 import com.example.bookingapp.data.model.ApiResponse;
 import com.example.bookingapp.data.model.PageResponse;
+import com.example.bookingapp.data.model.views.PropertyDetailResponse;
 import com.example.bookingapp.data.model.views.PropertyResponse;
 import com.example.bookingapp.data.remote.ApiService;
 
@@ -35,6 +36,26 @@ public class PropertyRepository {
 
             @Override
             public void onFailure(Call<ApiResponse<PageResponse<PropertyResponse>>> call, Throwable t) {
+                state.setValue(Resource.error(t.getLocalizedMessage(), null));
+            }
+        });
+    }
+
+    public void getPropertyDetail(Long id, MutableLiveData<Resource<PropertyDetailResponse>> state) {
+        state.setValue(Resource.loading());
+        apiService.getPropertyDetail(id).enqueue(new Callback<ApiResponse<PropertyDetailResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PropertyDetailResponse>> call,
+                                   Response<ApiResponse<PropertyDetailResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    state.setValue(Resource.success(response.body().getData()));
+                } else {
+                    state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<PropertyDetailResponse>> call, Throwable t) {
                 state.setValue(Resource.error(t.getLocalizedMessage(), null));
             }
         });

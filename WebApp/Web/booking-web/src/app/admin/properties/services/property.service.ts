@@ -1,49 +1,86 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { ApiResponse, Page } from '../../../shared/models/api-response.model';
 import { Property } from '../models/property.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface PropertyDetailResponse {
+  propertyId: number;
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  country: string;
+  rooms: RoomSearchResponse[];
+}
+
+export interface RoomSearchResponse {
+  roomId: number;
+  roomType: string;
+  price: number;
+  capacity: number;
+}
+
+export interface PropertyRequest {
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  country: string;
+}
+
+export interface RoomRequest {
+  roomType: string;
+  capacity: number;
+  basePrice: number;
+  quantity: number;
+}
+
+@Injectable({ providedIn: 'root' })
 export class PropertyService {
+  private http = inject(HttpClient);
+  private apiUrl = `${environment.apiUrl}/properties`;
 
-  private mockProperties: Property[] = [
-    {
-      id: 1,
-      host: { id: 2, email: 'host1@booking.com', fullName: 'John Doe Host', role: 'HOST' },
-      name: 'Luxury Ocean View Villa',
-      description: 'Beautiful 5 bedroom villa with stunning ocean views.',
-      address: '123 Beachfront Ave',
-      city: 'Da Nang',
-      country: 'Vietnam',
-      isActive: true
-    },
-    {
-      id: 2,
-      host: { id: 4, email: 'host2@booking.com', fullName: 'Alice Host', role: 'HOST' },
-      name: 'Cozy Mountain Cabin',
-      description: 'A quiet retreat in the mountains.',
-      address: '456 Pine Ridge',
-      city: 'Da Lat',
-      country: 'Vietnam',
-      isActive: true
-    },
-    {
-      id: 3,
-      host: { id: 2, email: 'host1@booking.com', fullName: 'John Doe Host', role: 'HOST' },
-      name: 'Modern City Apartment',
-      description: 'Central location, walking distance to everything.',
-      address: '789 Downtown Blvd',
-      city: 'Ho Chi Minh',
-      country: 'Vietnam',
-      isActive: false
-    }
-  ];
+  getProperties(page = 0, size = 10): Observable<Page<Property>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
 
-  constructor(private http: HttpClient) { }
+    return this.http.get<ApiResponse<Page<Property>>>(this.apiUrl, { params }).pipe(
+      map(res => res.data)
+    );
+  }
 
-  getProperties(): Observable<Property[]> {
-    return of(this.mockProperties);
+  getPropertyById(id: number): Observable<Property> {
+    return this.http.get<ApiResponse<Property>>(`${this.apiUrl}/${id}`).pipe(
+      map(res => res.data)
+    );
+  }
+
+  getPropertyDetail(id: number): Observable<PropertyDetailResponse> {
+    return this.http.get<ApiResponse<PropertyDetailResponse>>(`${this.apiUrl}/${id}/detail`).pipe(
+      map(res => res.data)
+    );
+  }
+
+  createProperty(request: PropertyRequest): Observable<Property> {
+    return this.http.post<ApiResponse<Property>>(`${this.apiUrl}/create`, request).pipe(
+      map(res => res.data)
+    );
+  }
+
+  addRoom(propertyId: number, request: RoomRequest): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/rooms`, request).pipe(
+      map(res => res.data)
+    );
+  }
+
+  uploadImages(propertyId: number, files: File[]): Observable<any> {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/images`, formData).pipe(
+      map(res => res.data)
+    );
   }
 }

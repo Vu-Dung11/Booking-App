@@ -1,6 +1,7 @@
 package com.example.bookingapp.controller;
 
 import com.example.bookingapp.dto.ApiResponse;
+import com.example.bookingapp.dto.PropertyDetailResponse;
 import com.example.bookingapp.dto.PropertySearchResponse;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Room;
@@ -10,6 +11,7 @@ import com.example.bookingapp.form.SearchRequest;
 import com.example.bookingapp.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,10 +46,10 @@ public class PropertyController {
     }
 
     @GetMapping
-    public ApiResponse<org.springframework.data.domain.Page<Property>> getAllProperties(
+    public ApiResponse<Page<Property>> getAllProperties(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
         return ApiResponse.success(propertyService.getAllProperties(pageable));
     }
 
@@ -55,6 +57,10 @@ public class PropertyController {
     public ApiResponse<Property> getPropertyById(@PathVariable Long id) {
         return ApiResponse.success(propertyService.getPropertyById(id));
     }
-    
+
+    @GetMapping("/{id}/detail")
+    public ApiResponse<PropertyDetailResponse> getPropertyDetail(@PathVariable Long id) {
+        return ApiResponse.success(propertyService.getPropertyDetail(id));
+    }
 
 }
