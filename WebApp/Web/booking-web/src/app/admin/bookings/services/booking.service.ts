@@ -5,10 +5,14 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse, Page } from '../../../shared/models/api-response.model';
 import { Booking, BookingStatus } from '../models/booking.model';
 
+/**
+ * Read-only booking cho host: backend chỉ trả về booking của các property
+ * thuộc host hiện tại. Host không có endpoint xác nhận/sửa booking.
+ */
 @Injectable({ providedIn: 'root' })
 export class BookingService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/bookings`;
+  private apiUrl = `${environment.apiUrl}/host/bookings`;
 
   getBookings(page = 0, size = 10, status?: BookingStatus | 'ALL'): Observable<Page<Booking>> {
     let params = new HttpParams()
@@ -26,12 +30,6 @@ export class BookingService {
 
   getBookingById(id: number): Observable<Booking> {
     return this.http.get<ApiResponse<Booking>>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.data)
-    );
-  }
-
-  confirmCheckOut(id: number): Observable<string> {
-    return this.http.post<ApiResponse<string>>(`${this.apiUrl}/${id}/booking-completed`, {}).pipe(
       map(res => res.data)
     );
   }

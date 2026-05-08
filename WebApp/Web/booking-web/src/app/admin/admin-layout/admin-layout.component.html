@@ -14,7 +14,7 @@
           <path d="M13 16L18 11L23 16L18 21L13 16Z" fill="white"/>
         </svg>
         @if (sidebarOpen() || mobileMenuOpen()) {
-          <span class="logo-text">StayManager</span>
+          <span class="logo-text">Host Portal</span>
         }
       </div>
     </div>
@@ -62,7 +62,7 @@
         <div class="user-info">
           <div class="user-avatar">{{ getUserInitial() }}</div>
           <div class="user-details">
-            <span class="user-name">{{ currentUser()?.sub || 'Admin' }}</span>
+            <span class="user-name">{{ currentUser()?.sub || 'Host' }}</span>
             <span class="user-role">{{ currentUser()?.role || 'HOST' }}</span>
           </div>
         </div>

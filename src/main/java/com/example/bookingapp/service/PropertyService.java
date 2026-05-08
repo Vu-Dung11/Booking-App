@@ -149,4 +149,86 @@ public class PropertyService {
                 .rooms(rooms)
                 .build();
     }
+
+    // ============================================================
+    // HOST-SCOPED OPERATIONS — chỉ trên các property của host hiện tại
+    // ============================================================
+
+    /** Trả về Property nếu thuộc về host hiện tại, nếu không thì ném NOT_PROPERTY_OWNER. */
+    private Property requireOwnedProperty(Long propertyId) {
+        User host = securityUtils.getCurrentUser();
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+        if (!property.getHost().getId().equals(host.getId())) {
+            throw new AppException(ErrorCode.NOT_PROPERTY_OWNER);
+        }
+        return property;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Property> getMyProperties(Pageable pageable) {
+        User host = securityUtils.getCurrentUser();
+        return propertyRepository.findByHostId(host.getId(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Property getMyPropertyById(Long id) {
+        return requireOwnedProperty(id);
+    }
+
+    @Transactional(readOnly = true)
+    public PropertyDetailResponse getMyPropertyDetail(Long id) {
+        Property property = requireOwnedProperty(id);
+        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
+                .map(r -> RoomSearchResponse.builder()
+                        .roomId(r.getId())
+                        .roomType(r.getRoomType())
+                        .price(r.getBasePrice())
+                        .capacity(r.getCapacity())
+                        .build())
+                .toList();
+        return PropertyDetailResponse.builder()
+                .propetyId(property.getId())
+                .name(property.getName())
+                .description(property.getDescription())
+                .address(property.getAddress())
+                .city(property.getCity())
+                .country(property.getCountry())
+                .rooms(rooms)
+                .build();
+    }
+
+    @Transactional
+    public Property updateMyProperty(Long id, PropertyRequest request) {
+        Property property = requireOwnedProperty(id);
+        property.setName(request.getName());
+        property.setDescription(request.getDescription());
+        property.setAddress(request.getAddress());
+        property.setCity(request.getCity());
+        property.setCountry(request.getCountry());
+        return propertyRepository.save(property);
+    }
+
+    /** Soft delete: chỉ chuyển isActive = false, dữ liệu booking/review vẫn giữ nguyên. */
+    @Transactional
+    public Property deactivateMyProperty(Long id) {
+        Property property = requireOwnedProperty(id);
+        property.setIsActive(false);
+        return propertyRepository.save(property);
+    }
+
+    /** Cho phép kích hoạt lại property đã ẩn. */
+    @Transactional
+    public Property activateMyProperty(Long id) {
+        Property property = requireOwnedProperty(id);
+        property.setIsActive(true);
+        return propertyRepository.save(property);
+    }
+
+    /** Hard delete: xoá vĩnh viễn. Sẽ thất bại nếu còn ràng buộc khoá ngoại (booking, review...). */
+    @Transactional
+    public void deleteMyProperty(Long id) {
+        Property property = requireOwnedProperty(id);
+        propertyRepository.delete(property);
+    }
 }

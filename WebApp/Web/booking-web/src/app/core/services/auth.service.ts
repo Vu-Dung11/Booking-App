@@ -15,12 +15,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export type UserRole = 'ADMIN' | 'HOST' | 'GUEST';
+
 export interface DecodedToken {
   sub: string;
-  role: string;
+  role: UserRole | string;
   userId: number;
   exp: number;
 }
+
+/** Chỉ HOST mới được dùng portal này. */
+export const ALLOWED_PORTAL_ROLES: UserRole[] = ['HOST'];
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -43,28 +48,51 @@ export class AuthService {
     return this.decodeToken(token);
   });
 
+  hasRole(role: UserRole): boolean {
+    return this.currentUser()?.role === role;
+  }
+
+  isHost = computed(() => this.currentUser()?.role === 'HOST');
+
   get token(): string | null {
     return this.tokenSignal();
   }
 
+  /**
+   * Đăng nhập. Backend trả token kèm role.
+   * Nếu role không phải HOST thì xoá token ngay và trả error code = 403 ở vị trí client
+   * để component login hiển thị thông báo phù hợp.
+   */
   login(request: LoginRequest): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(
       `${environment.apiUrl}/auth/login`, request
     ).pipe(
       tap(res => {
-        if (res.code === 0 && res.data?.token) {
-          this.setToken(res.data.token);
+        if (res.code !== 0 || !res.data?.token) return;
+        const decoded = this.decodeToken(res.data.token);
+        if (!decoded || !ALLOWED_PORTAL_ROLES.includes(decoded.role as UserRole)) {
+          this.clearToken();
+          // Mutate response để component nhận biết
+          res.code = 403;
+          res.message = 'Tài khoản này không phải chủ homestay (HOST). Truy cập bị từ chối.';
+          res.data = null as any;
+          return;
         }
+        this.setToken(res.data.token);
       })
     );
   }
 
   logout(): void {
+    this.clearToken();
+    this.router.navigate(['/login']);
+  }
+
+  clearToken(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('token');
     }
     this.tokenSignal.set(null);
-    this.router.navigate(['/login']);
   }
 
   private setToken(token: string): void {

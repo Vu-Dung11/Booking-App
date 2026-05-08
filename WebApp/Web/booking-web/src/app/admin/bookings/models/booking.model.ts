@@ -1,4 +1,4 @@
-import { User } from '../../users/models/user.model';
+import { User } from '../../../shared/models/user.model';
 import { Room } from '../../rooms/models/room.model';
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';

@@ -1,11 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { ApiResponse, Page } from '../../shared/models/api-response.model';
 import { AnimateOnScrollDirective } from '../../shared/directives/animate-on-scroll.directive';
+import { DashboardService, HostDashboardStats } from './services/dashboard.service';
+import { BookingService } from '../bookings/services/booking.service';
+import { Booking } from '../bookings/models/booking.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,19 +15,23 @@ import { AnimateOnScrollDirective } from '../../shared/directives/animate-on-scr
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  private http = inject(HttpClient);
+  private dashboardService = inject(DashboardService);
+  private bookingService = inject(BookingService);
 
-  stats = signal({
+  stats = signal<HostDashboardStats>({
     totalProperties: 0,
+    activeProperties: 0,
     totalBookings: 0,
-    totalUsers: 0,
     pendingBookings: 0,
     confirmedBookings: 0,
     completedBookings: 0,
-    cancelledBookings: 0
+    cancelledBookings: 0,
+    totalReviews: 0,
+    averageRating: 0,
+    totalRevenue: 0
   });
 
-  recentBookings = signal<any[]>([]);
+  recentBookings = signal<Booking[]>([]);
   isLoading = signal(true);
 
   ngOnInit(): void {
@@ -36,30 +40,15 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     forkJoin({
-      properties: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/properties?page=0&size=1`),
-      bookings: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/bookings?page=0&size=5`),
-      users: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/users?page=0&size=1`),
-      pendingBookings: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/bookings?status=PENDING&page=0&size=1`),
-      confirmedBookings: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/bookings?status=CONFIRMED&page=0&size=1`),
-      completedBookings: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/bookings?status=COMPLETED&page=0&size=1`),
-      cancelledBookings: this.http.get<ApiResponse<Page<any>>>(`${environment.apiUrl}/bookings?status=CANCELLED&page=0&size=1`)
+      stats: this.dashboardService.getStats(),
+      recent: this.bookingService.getBookings(0, 5)
     }).subscribe({
-      next: (res) => {
-        this.stats.set({
-          totalProperties: res.properties.data?.totalElements ?? 0,
-          totalBookings: res.bookings.data?.totalElements ?? 0,
-          totalUsers: res.users.data?.totalElements ?? 0,
-          pendingBookings: res.pendingBookings.data?.totalElements ?? 0,
-          confirmedBookings: res.confirmedBookings.data?.totalElements ?? 0,
-          completedBookings: res.completedBookings.data?.totalElements ?? 0,
-          cancelledBookings: res.cancelledBookings.data?.totalElements ?? 0
-        });
-        this.recentBookings.set(res.bookings.data?.content ?? []);
+      next: ({ stats, recent }) => {
+        this.stats.set(stats);
+        this.recentBookings.set(recent.content ?? []);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.isLoading.set(false);
-      }
+      error: () => this.isLoading.set(false)
     });
   }
 
@@ -71,5 +60,13 @@ export class DashboardComponent implements OnInit {
       case 'CANCELLED': return 'badge-danger';
       default: return '';
     }
+  }
+
+  formatPrice(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
+  }
+
+  formatDate(date: string): string {
+    return date ? new Date(date).toLocaleDateString('vi-VN') : '';
   }
 }

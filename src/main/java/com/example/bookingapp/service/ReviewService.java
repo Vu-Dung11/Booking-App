@@ -4,6 +4,7 @@ package com.example.bookingapp.service;
 
 
 import com.example.bookingapp.configuration.enm.ErrorCode;
+import com.example.bookingapp.dto.ReviewResponse;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Review;
@@ -15,6 +16,8 @@ import com.example.bookingapp.repository.ReviewRepository;
 import com.example.bookingapp.configuration.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,5 +62,22 @@ public class ReviewService {
         log.info("Khách hàng {} vừa đánh giá {} sao cho Homestay: {}",
                 currentUser.getEmail(), request.getRating(), property.getName());
         return reviewRepository.save(review);
+    }
+
+    /** Trả về review của các property thuộc về host hiện tại, kèm thông tin khách + homestay. */
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> getReviewsForCurrentHost(Pageable pageable) {
+        Long hostId = securityUtils.getCurrentUser().getId();
+        return reviewRepository.findByProperty_HostId(hostId, pageable)
+                .map(r -> ReviewResponse.builder()
+                        .id(r.getId())
+                        .propertyId(r.getProperty().getId())
+                        .propertyName(r.getProperty().getName())
+                        .bookingId(r.getBooking().getId())
+                        .guestName(r.getBooking().getGuest().getFullName())
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .createdAt(r.getCreatedAt())
+                        .build());
     }
 }

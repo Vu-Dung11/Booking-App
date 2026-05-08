@@ -1,6 +1,8 @@
 package com.example.bookingapp.repository;
 
 import com.example.bookingapp.entity.Booking;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -12,5 +14,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByStatusAndCreatedAtBefore(Booking.BookingStatus status, LocalDateTime timeout);
     // Tìm các đơn hàng đã xác nhận nhưng ngày Check-out đã qua (hoặc bằng ngày hiện tại)
     List<Booking> findAllByStatusAndCheckOutDateLessThanEqual(Booking.BookingStatus status, LocalDate date);
-    org.springframework.data.domain.Page<Booking> findByStatus(Booking.BookingStatus status, org.springframework.data.domain.Pageable pageable);
+    Page<Booking> findByStatus(Booking.BookingStatus status, Pageable pageable);
+
+    // Booking thuộc các property của host hiện tại
+    Page<Booking> findByRoom_Property_HostId(Long hostId, Pageable pageable);
+    Page<Booking> findByRoom_Property_HostIdAndStatus(Long hostId, Booking.BookingStatus status, Pageable pageable);
+    long countByRoom_Property_HostId(Long hostId);
+    long countByRoom_Property_HostIdAndStatus(Long hostId, Booking.BookingStatus status);
+
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT COALESCE(SUM(b.totalPrice), 0)
+        FROM Booking b
+        WHERE b.room.property.host.id = :hostId
+          AND b.status IN (com.example.bookingapp.entity.Booking.BookingStatus.CONFIRMED,
+                           com.example.bookingapp.entity.Booking.BookingStatus.COMPLETED)
+    """)
+    java.math.BigDecimal sumRevenueByHostId(@org.springframework.data.repository.query.Param("hostId") Long hostId);
 }

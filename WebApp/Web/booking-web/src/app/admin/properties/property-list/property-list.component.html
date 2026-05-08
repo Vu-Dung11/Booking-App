@@ -1,8 +1,8 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Quan ly Homestay</h1>
-      <p class="page-subtitle">Quan ly tat ca homestay tren he thong</p>
+      <h1 class="page-title">Homestay cua toi</h1>
+      <p class="page-subtitle">Quan ly tat ca homestay ban dang phu trach</p>
     </div>
     <button class="btn-primary" (click)="openCreateModal()">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -22,7 +22,7 @@
   @if (isLoading()) {
     <div class="loading-state" appAnimateOnScroll>Dang tai du lieu...</div>
   } @else if (filteredProperties.length === 0) {
-    <div class="empty-state" appAnimateOnScroll>Chua co homestay nao.</div>
+    <div class="empty-state" appAnimateOnScroll>Ban chua co homestay nao. Bam "Them homestay" de tao moi.</div>
   } @else {
     <div class="property-grid stagger-children">
       @for (property of filteredProperties; track property.id) {
@@ -32,24 +32,33 @@
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
             </div>
             <span class="status-chip" [class.active]="property.isActive" [class.inactive]="!property.isActive">
-              {{ property.isActive ? 'Active' : 'Inactive' }}
+              {{ property.isActive ? 'Dang hien thi' : 'Da an' }}
             </span>
           </div>
           <div class="card-body">
             <h3 class="card-title">{{ property.name }}</h3>
             <p class="card-location">{{ property.city }}, {{ property.country }}</p>
-            @if (property.host) {
-              <div class="host-row">
-                <div class="host-avatar">{{ property.host.fullName?.charAt(0) || 'H' }}</div>
-                <div class="host-info">
-                  <span class="host-label">Chu nha</span>
-                  <span class="host-name">{{ property.host.fullName }}</span>
-                </div>
-              </div>
-            }
+            <p class="card-address">{{ property.address }}</p>
           </div>
           <div class="card-footer">
-            <a [routerLink]="['/admin/properties', property.id]" class="btn-link">Chi tiet</a>
+            <a [routerLink]="['/host/properties', property.id]" class="btn-link">Chi tiet</a>
+            <div class="card-actions">
+              <button class="btn-icon" title="Sua" (click)="openEditModal(property)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.5 2L14 4.5L5.5 13L2 14L3 10.5L11.5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn-icon"
+                      [title]="property.isActive ? 'An khoi tim kiem cong khai' : 'Hien thi tro lai'"
+                      (click)="toggleActive(property)">
+                @if (property.isActive) {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                }
+              </button>
+              <button class="btn-icon btn-danger" title="Xoa vinh vien" (click)="openDeleteModal(property)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
       }
@@ -67,44 +76,76 @@
     </div>
   }
 
-  <!-- Create Modal -->
-  @if (showCreateModal()) {
-    <div class="modal-overlay" (click)="closeCreateModal()">
+  <!-- Create / Edit Modal -->
+  @if (showFormModal()) {
+    <div class="modal-overlay" (click)="closeFormModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Them homestay moi</h2>
-          <button class="btn-close" (click)="closeCreateModal()">&times;</button>
+          <h2>{{ modalMode() === 'edit' ? 'Sua thong tin homestay' : 'Them homestay moi' }}</h2>
+          <button class="btn-close" (click)="closeFormModal()">&times;</button>
         </div>
-        <form (ngSubmit)="submitCreate()" class="modal-form">
+        <form (ngSubmit)="submitForm()" class="modal-form">
           <div class="form-group">
             <label>Ten homestay *</label>
-            <input type="text" [(ngModel)]="createForm.name" name="name" placeholder="VD: Cozy Mountain Cabin" />
+            <input type="text" [(ngModel)]="formData.name" name="name" placeholder="VD: Cozy Mountain Cabin" />
           </div>
           <div class="form-group">
             <label>Mo ta</label>
-            <textarea [(ngModel)]="createForm.description" name="description" rows="3" placeholder="Mo ta ve homestay..."></textarea>
+            <textarea [(ngModel)]="formData.description" name="description" rows="3" placeholder="Mo ta ve homestay..."></textarea>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>Dia chi *</label>
-              <input type="text" [(ngModel)]="createForm.address" name="address" placeholder="123 Duong ABC" />
+              <input type="text" [(ngModel)]="formData.address" name="address" placeholder="123 Duong ABC" />
             </div>
             <div class="form-group">
               <label>Thanh pho *</label>
-              <input type="text" [(ngModel)]="createForm.city" name="city" placeholder="Da Nang" />
+              <input type="text" [(ngModel)]="formData.city" name="city" placeholder="Da Nang" />
             </div>
           </div>
           <div class="form-group">
             <label>Quoc gia</label>
-            <input type="text" [(ngModel)]="createForm.country" name="country" />
+            <input type="text" [(ngModel)]="formData.country" name="country" />
           </div>
+          @if (errorMessage()) {
+            <div class="form-error">{{ errorMessage() }}</div>
+          }
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="closeCreateModal()">Huy</button>
-            <button type="submit" class="btn-primary" [disabled]="isCreating()">
-              @if (isCreating()) { Dang tao... } @else { Tao homestay }
+            <button type="button" class="btn-secondary" (click)="closeFormModal()">Huy</button>
+            <button type="submit" class="btn-primary" [disabled]="isSaving()">
+              @if (isSaving()) {
+                {{ modalMode() === 'edit' ? 'Dang luu...' : 'Dang tao...' }}
+              } @else {
+                {{ modalMode() === 'edit' ? 'Luu thay doi' : 'Tao homestay' }}
+              }
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirm Modal -->
+  @if (showDeleteModal() && deletingProperty()) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Xoa vinh vien homestay?</h2>
+          <button class="btn-close" (click)="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Ban sap xoa <strong>{{ deletingProperty()!.name }}</strong>. Hanh dong nay <strong>khong the hoan tac</strong>.</p>
+          <p class="text-muted">Neu homestay van con booking hoac danh gia, ban nen <strong>"An homestay"</strong> thay vi xoa de giu lai du lieu lich su.</p>
+          @if (errorMessage()) {
+            <div class="form-error">{{ errorMessage() }}</div>
+          }
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Huy</button>
+          <button type="button" class="btn-danger" [disabled]="isDeleting()" (click)="confirmHardDelete()">
+            @if (isDeleting()) { Dang xoa... } @else { Xoa vinh vien }
+          </button>
+        </div>
       </div>
     </div>
   }

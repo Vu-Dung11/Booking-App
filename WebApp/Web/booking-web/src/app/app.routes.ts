@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -7,17 +8,13 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
   },
   {
-    path: 'admin',
+    path: 'host',
     loadComponent: () => import('./admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard('HOST')],
     children: [
       {
         path: 'dashboard',
         loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
-      },
-      {
-        path: 'users',
-        loadComponent: () => import('./admin/users/user-list/user-list.component').then(m => m.UserListComponent)
       },
       {
         path: 'properties',
@@ -45,6 +42,12 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },
+  // Backwards-compatible: /admin/* được redirect sang /host/* để link cũ không vỡ
+  {
+    path: 'admin',
+    redirectTo: 'host',
+    pathMatch: 'prefix'
   },
   {
     path: '',

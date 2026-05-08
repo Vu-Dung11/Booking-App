@@ -1,8 +1,8 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Tong quan he thong quan ly homestay</p>
+      <h1 class="page-title">Tong quan</h1>
+      <p class="page-subtitle">Hieu qua kinh doanh tren cac homestay cua ban</p>
     </div>
   </div>
 
@@ -30,11 +30,11 @@
 
     <div class="stat-card" appAnimateOnScroll>
       <div class="stat-icon icon-green">
-        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.2386 6.68629 12 10 12C13.3137 12 16 14.2386 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M10 1V19M14 5H8C6.34315 5 5 6.34315 5 8C5 9.65685 6.34315 11 8 11H12C13.6569 11 15 12.3431 15 14C15 15.6569 13.6569 17 12 17H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
       <div class="stat-content">
-        <span class="stat-value">{{ stats().totalUsers }}</span>
-        <span class="stat-label">Nguoi dung</span>
+        <span class="stat-value">{{ formatPrice(stats().totalRevenue) }}</span>
+        <span class="stat-label">Doanh thu</span>
       </div>
     </div>
 
@@ -105,25 +105,25 @@
         <h2 class="card-title">Thao tac nhanh</h2>
       </div>
       <div class="action-grid">
-        <a routerLink="/admin/properties" class="action-item">
+        <a routerLink="/host/properties" class="action-item">
           <div class="action-icon icon-primary">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-          <span>Them homestay</span>
+          <span>Quan ly homestay</span>
         </a>
-        <a routerLink="/admin/bookings" class="action-item">
+        <a routerLink="/host/bookings" class="action-item">
           <div class="action-icon icon-blue">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8H17" stroke="currentColor" stroke-width="1.5"/></svg>
           </div>
           <span>Xem dat phong</span>
         </a>
-        <a routerLink="/admin/users" class="action-item">
+        <a routerLink="/host/payments" class="action-item">
           <div class="action-icon icon-green">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.24 6.69 12 10 12C13.31 12 16 14.24 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 8H18" stroke="currentColor" stroke-width="1.5"/></svg>
           </div>
-          <span>Nguoi dung</span>
+          <span>Thanh toan</span>
         </a>
-        <a routerLink="/admin/reviews" class="action-item">
+        <a routerLink="/host/reviews" class="action-item">
           <div class="action-icon icon-orange">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8L14 12L15 17.5L10 15L5 17.5L6 12L2 8L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
           </div>
@@ -137,7 +137,7 @@
   <div class="card" appAnimateOnScroll>
     <div class="card-header">
       <h2 class="card-title">Dat phong gan day</h2>
-      <a routerLink="/admin/bookings" class="card-link">Xem tat ca</a>
+      <a routerLink="/host/bookings" class="card-link">Xem tat ca</a>
     </div>
     @if (isLoading()) {
       <div class="loading-state">Dang tai du lieu...</div>
@@ -161,7 +161,7 @@
                 <td class="fw-500">#{{ booking.id }}</td>
                 <td>{{ booking.guest?.fullName || 'N/A' }}</td>
                 <td>{{ booking.room?.property?.name || 'N/A' }}</td>
-                <td class="text-muted">{{ booking.checkInDate }}</td>
+                <td class="text-muted">{{ formatDate(booking.checkInDate) }}</td>
                 <td>
                   <span class="badge" [ngClass]="getStatusClass(booking.status)">{{ booking.status }}</span>
                 </td>

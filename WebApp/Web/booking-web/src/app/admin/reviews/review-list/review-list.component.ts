@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BookingService } from '../../bookings/services/booking.service';
-import { Booking } from '../../bookings/models/booking.model';
+import { ReviewService } from '../services/review.service';
+import { Review } from '../models/review.model';
 import { Page } from '../../../shared/models/api-response.model';
 import { AnimateOnScrollDirective } from '../../../shared/directives/animate-on-scroll.directive';
 
@@ -13,9 +13,9 @@ import { AnimateOnScrollDirective } from '../../../shared/directives/animate-on-
   styleUrl: './review-list.component.css'
 })
 export class ReviewListComponent implements OnInit {
-  private bookingService = inject(BookingService);
+  private reviewService = inject(ReviewService);
 
-  bookings = signal<Booking[]>([]);
+  reviews = signal<Review[]>([]);
   isLoading = signal(true);
   currentPage = signal(0);
   totalPages = signal(0);
@@ -23,14 +23,14 @@ export class ReviewListComponent implements OnInit {
   pageSize = 10;
 
   ngOnInit(): void {
-    this.loadCompletedBookings();
+    this.loadReviews();
   }
 
-  loadCompletedBookings(): void {
+  loadReviews(): void {
     this.isLoading.set(true);
-    this.bookingService.getBookings(this.currentPage(), this.pageSize, 'COMPLETED').subscribe({
-      next: (page: Page<Booking>) => {
-        this.bookings.set(page.content);
+    this.reviewService.getReviews(this.currentPage(), this.pageSize).subscribe({
+      next: (page: Page<Review>) => {
+        this.reviews.set(page.content);
         this.totalPages.set(page.totalPages);
         this.totalElements.set(page.totalElements);
         this.isLoading.set(false);
@@ -42,7 +42,7 @@ export class ReviewListComponent implements OnInit {
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages()) {
       this.currentPage.set(page);
-      this.loadCompletedBookings();
+      this.loadReviews();
     }
   }
 
@@ -53,5 +53,9 @@ export class ReviewListComponent implements OnInit {
   formatDate(date: string): string {
     if (!date) return '';
     return new Date(date).toLocaleDateString('vi-VN');
+  }
+
+  getStars(rating: number): number[] {
+    return Array.from({ length: Math.max(0, Math.min(5, rating)) }, (_, i) => i);
   }
 }

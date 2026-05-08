@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -11,14 +11,21 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   email = '';
   password = '';
   isLoading = signal(false);
   error = signal('');
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('reason') === 'forbidden') {
+      this.error.set('Phien dang nhap khong hop le. Vui long dang nhap bang tai khoan chu homestay (HOST).');
+    }
+  }
 
   onSubmit(): void {
     if (!this.email || !this.password) {
@@ -33,7 +40,7 @@ export class LoginComponent {
       next: (res) => {
         this.isLoading.set(false);
         if (res.code === 0) {
-          this.router.navigate(['/admin/dashboard']);
+          this.router.navigate(['/host/dashboard']);
         } else {
           this.error.set(res.message);
         }

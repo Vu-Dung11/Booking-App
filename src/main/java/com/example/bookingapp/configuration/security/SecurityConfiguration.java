@@ -55,7 +55,10 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // Public các API liên quan đến xác thực và tìm kiếm chung
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                         .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
+                        // Host portal: BẮT BUỘC role HOST (đặt TRƯỚC rule public GET /properties/**
+                        // để Spring Security match path /host/** trước)
+                        .requestMatchers("/api/v1/host/**").hasRole("HOST")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/media/**").permitAll()
                         // Các API khác yêu cầu phải đăng nhập

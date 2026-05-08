@@ -20,7 +20,9 @@ public enum ErrorCode {
     NOT_YOUR_BOOKING(507, "Bạn không thể đánh giá đơn hàng của người khác"),
     NOT_IN_PENDING_STATUS(510, "Đơn hàng không ở trạng thái chờ thanh toán"),
     BOOKING_IS_NOT_COMPLETED(508, " Bạn chỉ được đánh giá sau khi đã hoàn tất chuyến đi (Check-out)"),
-    EXISTED_REVIEW_FOR_BOOKING(509,  "Đơn hàng này đã được đánh giá trước đó");
+    EXISTED_REVIEW_FOR_BOOKING(509,  "Đơn hàng này đã được đánh giá trước đó"),
+    NOT_PROPERTY_OWNER(403, "Bạn không phải chủ sở hữu của homestay này"),
+    ONLY_HOST_ALLOWED(403, "Tính năng này chỉ dành cho tài khoản chủ homestay (HOST)");
 
     private final int code;
     private final String message;

@@ -37,16 +37,19 @@ export interface RoomRequest {
   quantity: number;
 }
 
+/**
+ * Tất cả thao tác đều scope theo host hiện tại — backend filter trên host_id
+ * lấy từ JWT, frontend không truyền hostId.
+ */
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/properties`;
+  private apiUrl = `${environment.apiUrl}/host/properties`;
 
   getProperties(page = 0, size = 10): Observable<Page<Property>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-
     return this.http.get<ApiResponse<Page<Property>>>(this.apiUrl, { params }).pipe(
       map(res => res.data)
     );
@@ -65,7 +68,33 @@ export class PropertyService {
   }
 
   createProperty(request: PropertyRequest): Observable<Property> {
-    return this.http.post<ApiResponse<Property>>(`${this.apiUrl}/create`, request).pipe(
+    return this.http.post<ApiResponse<Property>>(this.apiUrl, request).pipe(
+      map(res => res.data)
+    );
+  }
+
+  updateProperty(id: number, request: PropertyRequest): Observable<Property> {
+    return this.http.put<ApiResponse<Property>>(`${this.apiUrl}/${id}`, request).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /** Soft delete: ẩn homestay khỏi tìm kiếm public, dữ liệu được giữ. */
+  deactivateProperty(id: number): Observable<Property> {
+    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(
+      map(res => res.data)
+    );
+  }
+
+  activateProperty(id: number): Observable<Property> {
+    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/activate`, {}).pipe(
+      map(res => res.data)
+    );
+  }
+
+  /** Hard delete: xoá vĩnh viễn (backend sẽ chặn nếu còn ràng buộc khoá ngoại). */
+  deleteProperty(id: number): Observable<string> {
+    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${id}`).pipe(
       map(res => res.data)
     );
   }

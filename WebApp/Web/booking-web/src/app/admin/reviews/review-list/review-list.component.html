@@ -2,50 +2,47 @@
   <div class="page-header" appAnimateOnScroll>
     <div>
       <h1 class="page-title">Danh gia</h1>
-      <p class="page-subtitle">Cac chuyen di da hoan thanh va co the duoc danh gia</p>
+      <p class="page-subtitle">Phan hoi tu khach da o cac homestay cua ban</p>
     </div>
   </div>
 
   <div class="card" appAnimateOnScroll>
     <div class="card-toolbar">
-      <span class="total-label">{{ totalElements() }} chuyen di hoan thanh</span>
+      <span class="total-label">{{ totalElements() }} danh gia</span>
     </div>
 
     @if (isLoading()) {
       <div class="loading-state">Dang tai du lieu...</div>
-    } @else if (bookings().length === 0) {
-      <div class="empty-state">Chua co chuyen di nao hoan thanh.</div>
+    } @else if (reviews().length === 0) {
+      <div class="empty-state">Chua co danh gia nao.</div>
     } @else {
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Booking ID</th>
-              <th>Khach hang</th>
-              <th>Homestay</th>
-              <th>Phong</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (booking of bookings(); track booking.id) {
-              <tr>
-                <td class="fw-500">#{{ booking.id }}</td>
-                <td>
-                  <div class="guest-cell">
-                    <div class="avatar-sm">{{ booking.guest?.fullName?.charAt(0) || '?' }}</div>
-                    <span class="guest-name">{{ booking.guest?.fullName || 'N/A' }}</span>
-                  </div>
-                </td>
-                <td class="text-secondary">{{ booking.room?.property?.name || 'N/A' }}</td>
-                <td class="text-secondary">{{ booking.room?.roomType || 'N/A' }}</td>
-                <td class="text-muted">{{ formatDate(booking.checkInDate) }}</td>
-                <td class="text-muted">{{ formatDate(booking.checkOutDate) }}</td>
-              </tr>
+      <div class="reviews-list stagger-children">
+        @for (review of reviews(); track review.id) {
+          <div class="review-item" appAnimateOnScroll>
+            <div class="review-header">
+              <div class="review-meta">
+                <div class="avatar-sm">{{ (review.guestName || '?').charAt(0) }}</div>
+                <div>
+                  <div class="guest-name">{{ review.guestName || 'An danh' }}</div>
+                  <div class="property-name">{{ review.propertyName }}</div>
+                </div>
+              </div>
+              <div class="rating-row">
+                @for (s of getStars(review.rating); track s) {
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="#FFC078"><path d="M7 1L8.85 4.95L13 5.5L10 8.5L10.7 12.5L7 10.5L3.3 12.5L4 8.5L1 5.5L5.15 4.95L7 1Z"/></svg>
+                }
+                <span class="rating-value">{{ review.rating }}/5</span>
+              </div>
+            </div>
+            @if (review.comment) {
+              <p class="review-comment">{{ review.comment }}</p>
             }
-          </tbody>
-        </table>
+            <div class="review-footer">
+              <span class="text-muted">Booking #{{ review.bookingId }}</span>
+              <span class="text-muted">{{ formatDate(review.createdAt) }}</span>
+            </div>
+          </div>
+        }
       </div>
 
       <div class="table-footer">

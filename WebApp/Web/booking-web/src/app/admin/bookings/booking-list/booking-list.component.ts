@@ -57,12 +57,6 @@ export class BookingListComponent implements OnInit {
     return Array.from({ length: this.totalPages() }, (_, i) => i);
   }
 
-  confirmCheckOut(booking: Booking): void {
-    this.bookingService.confirmCheckOut(booking.id).subscribe({
-      next: () => this.loadBookings()
-    });
-  }
-
   getStatusClass(status: string): string {
     switch (status) {
       case 'PENDING': return 'badge-warning';

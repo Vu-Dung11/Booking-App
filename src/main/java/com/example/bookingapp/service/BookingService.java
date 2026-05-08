@@ -230,4 +230,29 @@ public class BookingService {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
     }
+
+    // ============================================================
+    // HOST-SCOPED READ — host chỉ xem booking của property mình
+    // ============================================================
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Booking> getBookingsForCurrentHost(
+            Booking.BookingStatus status, org.springframework.data.domain.Pageable pageable) {
+        Long hostId = securityUtils.getCurrentUser().getId();
+        if (status != null) {
+            return bookingRepository.findByRoom_Property_HostIdAndStatus(hostId, status, pageable);
+        }
+        return bookingRepository.findByRoom_Property_HostId(hostId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Booking getBookingForCurrentHost(Long bookingId) {
+        Long hostId = securityUtils.getCurrentUser().getId();
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+        if (!booking.getRoom().getProperty().getHost().getId().equals(hostId)) {
+            throw new AppException(ErrorCode.NOT_PROPERTY_OWNER);
+        }
+        return booking;
+    }
 }

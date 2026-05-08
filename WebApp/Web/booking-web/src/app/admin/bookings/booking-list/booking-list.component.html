@@ -1,8 +1,8 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Quan ly dat phong</h1>
-      <p class="page-subtitle">Theo doi va xu ly tat ca cac don dat phong</p>
+      <h1 class="page-title">Dat phong</h1>
+      <p class="page-subtitle">Tat ca don dat phong tren homestay cua ban (chi xem)</p>
     </div>
   </div>
 
@@ -38,7 +38,6 @@
               <th>Check-out</th>
               <th>Tong tien</th>
               <th>Trang thai</th>
-              <th class="text-right">Thao tac</th>
             </tr>
           </thead>
           <tbody>
@@ -65,13 +64,6 @@
                 <td class="fw-600">{{ formatPrice(booking.totalPrice) }}</td>
                 <td>
                   <span class="badge" [ngClass]="getStatusClass(booking.status)">{{ booking.status }}</span>
-                </td>
-                <td class="text-right">
-                  @if (booking.status === 'CONFIRMED') {
-                    <button class="btn-action btn-success-action" title="Xac nhan check-out" (click)="confirmCheckOut(booking)">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                  }
                 </td>
               </tr>
             }
