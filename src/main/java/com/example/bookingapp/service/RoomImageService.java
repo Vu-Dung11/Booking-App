@@ -30,39 +30,38 @@ public class RoomImageService {
     private final UserRepository userRepository;
     private final SecurityUtils securityUtils;
 
-
-    @Transactional
-    public List<RoomImage> uploadImagesForRoom(Long roomId, List<MultipartFile> files) {
-        User currentHost = securityUtils.getCurrentUser();
-
-        // 1. Tìm Phòng
+    /**
+     * Verify room thuộc property và thuộc host hiện tại.
+     */
+    private Room requireOwnedRoom(Long propertyId, Long roomId) {
+        User host = securityUtils.getCurrentUser();
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_IS_NOT_FOUND));
-
-        // 2. Đi đường vòng để kiểm tra quyền sở hữu (Room -> Property -> Host)
-        if (!room.getProperty().getHost().getId().equals(currentHost.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (!room.getProperty().getId().equals(propertyId)) {
+            throw new AppException(ErrorCode.ROOM_NOT_BELONG_TO_PROPERTY);
         }
+        if (!room.getProperty().getHost().getId().equals(host.getId())) {
+            throw new AppException(ErrorCode.NOT_PROPERTY_OWNER);
+        }
+        return room;
+    }
 
-        // 3. Kiểm tra xem phòng đã có ảnh Thumbnail chưa
+    @Transactional
+    public List<RoomImage> uploadImagesForRoom(Long propertyId, Long roomId, List<MultipartFile> files) {
+        Room room = requireOwnedRoom(propertyId, roomId);
+
         boolean hasThumbnail = roomImageRepository.existsByRoomIdAndIsThumbnailTrue(roomId);
-
         List<RoomImage> savedImages = new ArrayList<>();
 
-        // 4. Duyệt file và đẩy lên Cloudinary (Lưu vào thư mục riêng cho gọn)
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
-
             try {
-                // Tạo thư mục "room_images" trên Cloudinary để tách biệt với ảnh của Property
                 Map<String, Object> uploadResult = cloudinaryService.uploadFile(file, "room_images");
                 String imageUrl = uploadResult.get("secure_url").toString();
                 String publicId = uploadResult.get("public_id").toString();
 
                 boolean isThumbnail = !hasThumbnail;
-                if (isThumbnail) {
-                    hasThumbnail = true;
-                }
+                if (isThumbnail) hasThumbnail = true;
 
                 RoomImage roomImage = RoomImage.builder()
                         .room(room)
@@ -70,15 +69,71 @@ public class RoomImageService {
                         .publicId(publicId)
                         .isThumbnail(isThumbnail)
                         .build();
-
                 savedImages.add(roomImageRepository.save(roomImage));
-
             } catch (Exception e) {
                 log.error("Lỗi khi upload ảnh cho Phòng {}: {}", roomId, e.getMessage());
             }
         }
-
         log.info("Đã upload thành công {} ảnh cho Phòng ID: {}", savedImages.size(), roomId);
         return savedImages;
+    }
+
+    /** Backwards-compatible wrapper cho RoomImageController cũ (không có propertyId trên path). */
+    @Transactional
+    public List<RoomImage> uploadImagesForRoom(Long roomId, List<MultipartFile> files) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_IS_NOT_FOUND));
+        return uploadImagesForRoom(room.getProperty().getId(), roomId, files);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoomImage> listImagesForRoom(Long propertyId, Long roomId) {
+        requireOwnedRoom(propertyId, roomId);
+        return roomImageRepository.findByRoomId(roomId);
+    }
+
+    @Transactional
+    public void deleteImage(Long propertyId, Long roomId, Long imageId) {
+        requireOwnedRoom(propertyId, roomId);
+        RoomImage image = roomImageRepository.findById(imageId)
+                .orElseThrow(() -> new AppException(ErrorCode.IMAGE_NOT_FOUND));
+        if (!image.getRoom().getId().equals(roomId)) {
+            throw new AppException(ErrorCode.IMAGE_NOT_BELONG_TO_ROOM);
+        }
+
+        boolean wasThumbnail = Boolean.TRUE.equals(image.getIsThumbnail());
+        cloudinaryService.deleteFile(image.getPublicId());
+        roomImageRepository.delete(image);
+
+        if (wasThumbnail) {
+            List<RoomImage> remaining = roomImageRepository.findByRoomId(roomId);
+            if (!remaining.isEmpty()) {
+                RoomImage next = remaining.get(0);
+                next.setIsThumbnail(true);
+                roomImageRepository.save(next);
+            }
+        }
+    }
+
+    @Transactional
+    public RoomImage setThumbnail(Long propertyId, Long roomId, Long imageId) {
+        requireOwnedRoom(propertyId, roomId);
+        RoomImage target = roomImageRepository.findById(imageId)
+                .orElseThrow(() -> new AppException(ErrorCode.IMAGE_NOT_FOUND));
+        if (!target.getRoom().getId().equals(roomId)) {
+            throw new AppException(ErrorCode.IMAGE_NOT_BELONG_TO_ROOM);
+        }
+
+        List<RoomImage> all = roomImageRepository.findByRoomId(roomId);
+        for (RoomImage img : all) {
+            if (img.getId().equals(imageId)) {
+                img.setIsThumbnail(true);
+            } else if (Boolean.TRUE.equals(img.getIsThumbnail())) {
+                img.setIsThumbnail(false);
+            }
+        }
+        roomImageRepository.saveAll(all);
+        return roomImageRepository.findById(imageId)
+                .orElseThrow(() -> new AppException(ErrorCode.IMAGE_NOT_FOUND));
     }
 }

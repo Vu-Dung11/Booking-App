@@ -14,6 +14,7 @@ import java.util.List;
 @Repository
 public interface RoomInventoryRepository extends JpaRepository<RoomInventory, Long> {
     boolean existsByRoomIdAndInventoryDate(Long roomId, LocalDate date);
+    void deleteByRoomId(Long roomId);
     // KỸ THUẬT KHÓA BI QUAN (SELECT ... FOR UPDATE)
     // Khi 1 transaction đang gọi hàm này, các transaction khác phải đứng chờ
     @Lock(LockModeType.PESSIMISTIC_WRITE)

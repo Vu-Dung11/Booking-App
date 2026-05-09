@@ -5,13 +5,19 @@ import com.example.bookingapp.dto.PropertySearchResponse;
 import com.example.bookingapp.dto.RoomSearchResponse;
 import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.entity.Property;
+import com.example.bookingapp.entity.PropertyImage;
 import com.example.bookingapp.entity.Room;
+import com.example.bookingapp.entity.RoomImage;
 import com.example.bookingapp.entity.User;
 import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.form.PropertyRequest;
 import com.example.bookingapp.form.RoomRequest;
 import com.example.bookingapp.form.SearchRequest;
+import com.example.bookingapp.repository.BookingRepository;
+import com.example.bookingapp.repository.PropertyImageRepository;
 import com.example.bookingapp.repository.PropertyRepository;
+import com.example.bookingapp.repository.RoomImageRepository;
+import com.example.bookingapp.repository.RoomInventoryRepository;
 import com.example.bookingapp.repository.RoomRepository;
 import com.example.bookingapp.configuration.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +37,15 @@ public class PropertyService {
     private final RoomRepository roomRepository;
     private final InventoryService inventoryService;
     private final SecurityUtils securityUtils;
-
-
+    private final PropertyImageRepository propertyImageRepository;
+    private final RoomImageRepository roomImageRepository;
+    private final BookingRepository bookingRepository;
+    private final RoomInventoryRepository roomInventoryRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional
     public Property createProperty(PropertyRequest request) {
         User host = securityUtils.getCurrentUser();
-
         Property property = Property.builder()
                 .host(host)
                 .name(request.getName())
@@ -46,23 +55,12 @@ public class PropertyService {
                 .country(request.getCountry())
                 .isActive(true)
                 .build();
-
         return propertyRepository.save(property);
     }
 
-    // thêm phòng vào property
     @Transactional
     public Room addRoomToProperty(Long propertyId, RoomRequest roomRequest) {
-        User host = securityUtils.getCurrentUser();
-        // Tìm property và kiểm tra xem property này có thuộc về host đang đăng nhập
-        // không
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
-
-        if (!property.getHost().getId().equals(host.getId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-
+        Property property = requireOwnedProperty(propertyId);
         Room room = Room.builder()
                 .property(property)
                 .roomType(roomRequest.getRoomType())
@@ -77,10 +75,7 @@ public class PropertyService {
 
     @Transactional(readOnly = true)
     public List<PropertySearchResponse> searchProperties(SearchRequest request) {
-        // 1. Tính số đêm lưu trú
         long duration = java.time.temporal.ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
-
-        // 2. Gọi Repository lấy danh sách Homestay thỏa mãn
         List<Property> properties = propertyRepository.searchAvailableProperties(
                 request.getCity(),
                 request.getCheckIn(),
@@ -88,19 +83,10 @@ public class PropertyService {
                 request.getGuests(),
                 duration);
 
-        // 3. Map dữ liệu sang DTO (Ở dự án thực tế nên dùng MapStruct để code sạch hơn)
         return properties.stream().map(p -> {
-            // Lọc lại các phòng thực sự còn trống của property này
             List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(p.getId()).stream()
                     .filter(r -> r.getCapacity() >= request.getGuests())
-                    // Lưu ý: Chỗ này cần gọi thêm một hàm check inventory của riêng phòng này
-                    // để đảm bảo tính chính xác trước khi trả về
-                    .map(r -> RoomSearchResponse.builder()
-                            .roomId(r.getId())
-                            .roomType(r.getRoomType())
-                            .price(r.getBasePrice())
-                            .capacity(r.getCapacity())
-                            .build())
+                    .map(this::toRoomSearchResponse)
                     .toList();
 
             return PropertySearchResponse.builder()
@@ -114,6 +100,7 @@ public class PropertyService {
                     .build();
         }).toList();
     }
+
     @Transactional(readOnly = true)
     public Page<Property> getAllProperties(Pageable pageable) {
         return propertyRepository.findAll(pageable);
@@ -129,29 +116,11 @@ public class PropertyService {
     public PropertyDetailResponse getPropertyDetail(Long id) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
-
-        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
-                .map(r -> RoomSearchResponse.builder()
-                        .roomId(r.getId())
-                        .roomType(r.getRoomType())
-                        .price(r.getBasePrice())
-                        .capacity(r.getCapacity())
-                        .build())
-                .toList();
-
-        return PropertyDetailResponse.builder()
-                .propetyId(property.getId())
-                .name(property.getName())
-                .description(property.getDescription())
-                .address(property.getAddress())
-                .city(property.getCity())
-                .country(property.getCountry())
-                .rooms(rooms)
-                .build();
+        return buildDetail(property);
     }
 
     // ============================================================
-    // HOST-SCOPED OPERATIONS — chỉ trên các property của host hiện tại
+    // HOST-SCOPED OPERATIONS
     // ============================================================
 
     /** Trả về Property nếu thuộc về host hiện tại, nếu không thì ném NOT_PROPERTY_OWNER. */
@@ -168,7 +137,14 @@ public class PropertyService {
     @Transactional(readOnly = true)
     public Page<Property> getMyProperties(Pageable pageable) {
         User host = securityUtils.getCurrentUser();
-        return propertyRepository.findByHostId(host.getId(), pageable);
+        Page<Property> page = propertyRepository.findByHostId(host.getId(), pageable);
+        page.forEach(this::attachThumbnail);
+        return page;
+    }
+
+    private void attachThumbnail(Property p) {
+        propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(p.getId())
+                .ifPresent(img -> p.setThumbnailUrl(img.getImageUrl()));
     }
 
     @Transactional(readOnly = true)
@@ -179,23 +155,7 @@ public class PropertyService {
     @Transactional(readOnly = true)
     public PropertyDetailResponse getMyPropertyDetail(Long id) {
         Property property = requireOwnedProperty(id);
-        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
-                .map(r -> RoomSearchResponse.builder()
-                        .roomId(r.getId())
-                        .roomType(r.getRoomType())
-                        .price(r.getBasePrice())
-                        .capacity(r.getCapacity())
-                        .build())
-                .toList();
-        return PropertyDetailResponse.builder()
-                .propetyId(property.getId())
-                .name(property.getName())
-                .description(property.getDescription())
-                .address(property.getAddress())
-                .city(property.getCity())
-                .country(property.getCountry())
-                .rooms(rooms)
-                .build();
+        return buildDetail(property);
     }
 
     @Transactional
@@ -209,7 +169,6 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
-    /** Soft delete: chỉ chuyển isActive = false, dữ liệu booking/review vẫn giữ nguyên. */
     @Transactional
     public Property deactivateMyProperty(Long id) {
         Property property = requireOwnedProperty(id);
@@ -217,7 +176,6 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
-    /** Cho phép kích hoạt lại property đã ẩn. */
     @Transactional
     public Property activateMyProperty(Long id) {
         Property property = requireOwnedProperty(id);
@@ -225,10 +183,95 @@ public class PropertyService {
         return propertyRepository.save(property);
     }
 
-    /** Hard delete: xoá vĩnh viễn. Sẽ thất bại nếu còn ràng buộc khoá ngoại (booking, review...). */
     @Transactional
     public void deleteMyProperty(Long id) {
         Property property = requireOwnedProperty(id);
         propertyRepository.delete(property);
+    }
+
+    // ===== Room CRUD =====
+
+    /** Lấy room thuộc property thuộc host hiện tại. */
+    private Room requireOwnedRoom(Long propertyId, Long roomId) {
+        requireOwnedProperty(propertyId);
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_IS_NOT_FOUND));
+        if (!room.getProperty().getId().equals(propertyId)) {
+            throw new AppException(ErrorCode.ROOM_NOT_BELONG_TO_PROPERTY);
+        }
+        return room;
+    }
+
+    @Transactional
+    public Room updateMyRoom(Long propertyId, Long roomId, RoomRequest request) {
+        Room room = requireOwnedRoom(propertyId, roomId);
+        room.setRoomType(request.getRoomType());
+        room.setCapacity(request.getCapacity());
+        room.setBasePrice(request.getBasePrice());
+        room.setQuantity(request.getQuantity());
+        return roomRepository.save(room);
+    }
+
+    /**
+     * Hard delete room. Block nếu còn booking ở bất kỳ status nào.
+     * Xoá room_inventory + room_images (kèm Cloudinary) trước, rồi xoá room.
+     */
+    @Transactional
+    public void deleteMyRoom(Long propertyId, Long roomId) {
+        Room room = requireOwnedRoom(propertyId, roomId);
+
+        if (bookingRepository.existsByRoom_Id(roomId)) {
+            throw new AppException(ErrorCode.ROOM_HAS_BOOKING);
+        }
+
+        // Xoá room_inventory trước (FK)
+        roomInventoryRepository.deleteByRoomId(roomId);
+
+        // Xoá room_images: Cloudinary trước, rồi DB
+        List<RoomImage> images = roomImageRepository.findByRoomId(roomId);
+        for (RoomImage img : images) {
+            cloudinaryService.deleteFile(img.getPublicId());
+        }
+        roomImageRepository.deleteByRoomId(roomId);
+
+        roomRepository.delete(room);
+    }
+
+    // ============================================================
+    // helpers
+    // ============================================================
+
+    private PropertyDetailResponse buildDetail(Property property) {
+        Long pid = property.getId();
+        Optional<PropertyImage> propThumb = propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(pid);
+        String propertyThumb = propThumb.map(PropertyImage::getImageUrl).orElse(null);
+
+        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(pid).stream()
+                .map(this::toRoomSearchResponse)
+                .toList();
+
+        return PropertyDetailResponse.builder()
+                .propetyId(pid)
+                .name(property.getName())
+                .description(property.getDescription())
+                .address(property.getAddress())
+                .city(property.getCity())
+                .country(property.getCountry())
+                .isActive(property.getIsActive())
+                .thumbnailUrl(propertyThumb)
+                .rooms(rooms)
+                .build();
+    }
+
+    private RoomSearchResponse toRoomSearchResponse(Room r) {
+        Optional<RoomImage> thumb = roomImageRepository.findFirstByRoomIdAndIsThumbnailTrue(r.getId());
+        return RoomSearchResponse.builder()
+                .roomId(r.getId())
+                .roomType(r.getRoomType())
+                .price(r.getBasePrice())
+                .capacity(r.getCapacity())
+                .quantity(r.getQuantity())
+                .thumbnailUrl(thumb.map(RoomImage::getImageUrl).orElse(null))
+                .build();
     }
 }

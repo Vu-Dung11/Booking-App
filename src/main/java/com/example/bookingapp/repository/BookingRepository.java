@@ -16,6 +16,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByStatusAndCheckOutDateLessThanEqual(Booking.BookingStatus status, LocalDate date);
     Page<Booking> findByStatus(Booking.BookingStatus status, Pageable pageable);
 
+    // Có booking nào trên room này không (dùng khi xoá room)
+    boolean existsByRoom_Id(Long roomId);
+
     // Booking thuộc các property của host hiện tại
     Page<Booking> findByRoom_Property_HostId(Long hostId, Pageable pageable);
     Page<Booking> findByRoom_Property_HostIdAndStatus(Long hostId, Booking.BookingStatus status, Pageable pageable);

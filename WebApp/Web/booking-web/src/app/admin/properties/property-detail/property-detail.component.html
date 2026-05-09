@@ -11,23 +11,83 @@
   } @else if (!property()) {
     <div class="empty-state">Khong tim thay homestay.</div>
   } @else {
-    <!-- Property Info -->
-    <div class="detail-header" appAnimateOnScroll>
-      <div class="detail-info">
-        <h1 class="detail-title">{{ property()!.name }}</h1>
-        <p class="detail-location">{{ property()!.address }}, {{ property()!.city }}, {{ property()!.country }}</p>
-        @if (property()!.description) {
-          <p class="detail-desc">{{ property()!.description }}</p>
-        }
-      </div>
-    </div>
 
-    <!-- Rooms Section -->
-    <div class="section" appAnimateOnScroll>
+    <!-- ===== SECTION 1: PROPERTY INFO ===== -->
+    <section class="section info-section" appAnimateOnScroll>
+      <div class="info-card">
+        <div class="info-header">
+          <div class="info-main">
+            <div class="info-title-row">
+              <h1 class="detail-title">{{ property()!.name }}</h1>
+              <span class="status-chip"
+                    [class.active]="property()!.isActive"
+                    [class.inactive]="!property()!.isActive">
+                {{ property()!.isActive ? 'Dang hien thi' : 'Da an' }}
+              </span>
+            </div>
+            <p class="detail-location">{{ property()!.address }}, {{ property()!.city }}, {{ property()!.country }}</p>
+            @if (property()!.description) {
+              <p class="detail-desc">{{ property()!.description }}</p>
+            }
+          </div>
+          <div class="info-actions">
+            <button class="btn-secondary" (click)="toggleActive()">
+              {{ property()!.isActive ? 'An homestay' : 'Hien thi' }}
+            </button>
+            <button class="btn-primary" (click)="openEditProperty()">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2L14 4.5L5.5 13L2 14L3 10.5L11.5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Chinh sua
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2: GALLERY ===== -->
+    <section class="section gallery-section" appAnimateOnScroll>
+      <div class="section-header">
+        <h2 class="section-title">Thu vien anh ({{ propertyImages().length }})</h2>
+        <label class="btn-primary" [class.disabled]="isUploadingImages()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          @if (isUploadingImages()) { Dang upload... } @else { Tai anh len }
+          <input type="file" multiple accept="image/*" (change)="onPropertyFilesSelected($event)" hidden [disabled]="isUploadingImages()" />
+        </label>
+      </div>
+
+      @if (isLoadingImages()) {
+        <div class="empty-rooms">Dang tai anh...</div>
+      } @else if (propertyImages().length === 0) {
+        <div class="empty-rooms">Chua co anh nao. Bam "Tai anh len" de them.</div>
+      } @else {
+        <div class="gallery-grid">
+          @for (image of propertyImages(); track image.id) {
+            <div class="gallery-item" [class.thumbnail]="image.isThumbnail">
+              <img [src]="image.imageUrl" [alt]="property()!.name" loading="lazy" />
+              @if (image.isThumbnail) {
+                <span class="thumbnail-badge">THUMBNAIL</span>
+              }
+              <div class="gallery-overlay">
+                @if (!image.isThumbnail) {
+                  <button class="overlay-btn" (click)="setPropertyThumbnail(image)" title="Dat lam thumbnail">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8L14 12L15 17.5L10 15L5 17.5L6 12L2 8L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  </button>
+                }
+                <button class="overlay-btn overlay-btn-danger" (click)="deletePropertyImage(image)" title="Xoa">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- ===== SECTION 3: ROOMS ===== -->
+    <section class="section rooms-section" appAnimateOnScroll>
       <div class="section-header">
         <h2 class="section-title">Danh sach phong ({{ property()!.rooms?.length || 0 }})</h2>
         <button class="btn-primary" (click)="openAddRoom()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Them phong
         </button>
       </div>
@@ -38,35 +98,101 @@
         <div class="rooms-grid stagger-children">
           @for (room of property()!.rooms; track room.roomId) {
             <div class="room-card" appAnimateOnScroll>
-              <div class="room-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 21V11L12 5L21 11V21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="8" y="14" width="8" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+              <div class="room-thumb">
+                @if (room.thumbnailUrl) {
+                  <img [src]="room.thumbnailUrl" [alt]="room.roomType" loading="lazy" />
+                } @else {
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V11L12 5L21 11V21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="8" y="14" width="8" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+                }
               </div>
-              <h3 class="room-type">{{ room.roomType }}</h3>
-              <div class="room-details">
-                <div class="room-detail-item">
-                  <span class="detail-label">Suc chua</span>
-                  <span class="detail-value">{{ room.capacity }} nguoi</span>
+              <div class="room-body">
+                <h3 class="room-type">{{ room.roomType }}</h3>
+                <div class="room-details">
+                  <div class="room-detail-item">
+                    <span class="detail-label">Suc chua</span>
+                    <span class="detail-value">{{ room.capacity }} nguoi</span>
+                  </div>
+                  <div class="room-detail-item">
+                    <span class="detail-label">So phong</span>
+                    <span class="detail-value">{{ room.quantity || 1 }}</span>
+                  </div>
+                  <div class="room-detail-item">
+                    <span class="detail-label">Gia/dem</span>
+                    <span class="detail-value price">{{ formatPrice(room.price) }}</span>
+                  </div>
                 </div>
-                <div class="room-detail-item">
-                  <span class="detail-label">Gia</span>
-                  <span class="detail-value price">{{ formatPrice(room.price) }}</span>
+              </div>
+              <div class="room-footer">
+                <button class="btn-icon" title="Quan ly anh phong" (click)="openRoomImagesModal(room)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="7" r="1" fill="currentColor"/><path d="M3 11L6 8L9 11L13 7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  Anh phong
+                </button>
+                <div class="room-actions">
+                  <button class="btn-icon-sm" title="Sua" (click)="openEditRoom(room)">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2L14 4.5L5.5 13L2 14L3 10.5L11.5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  </button>
+                  <button class="btn-icon-sm btn-danger" title="Xoa" (click)="openDeleteRoom(room)">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
           }
         </div>
       }
-    </div>
+    </section>
 
-    <!-- Add Room Modal -->
-    @if (showAddRoom()) {
-      <div class="modal-overlay" (click)="showAddRoom.set(false)">
+    <!-- ===== Edit Property Modal ===== -->
+    @if (showEditProperty()) {
+      <div class="modal-overlay" (click)="closeEditProperty()">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Them phong moi</h2>
-            <button class="btn-close" (click)="showAddRoom.set(false)">&times;</button>
+            <h2>Chinh sua thong tin homestay</h2>
+            <button class="btn-close" (click)="closeEditProperty()">&times;</button>
           </div>
-          <form (ngSubmit)="submitRoom()" class="modal-form">
+          <form (ngSubmit)="saveProperty()" class="modal-form">
+            <div class="form-group">
+              <label>Ten homestay *</label>
+              <input type="text" [(ngModel)]="propertyForm.name" name="name" placeholder="VD: Cozy Mountain Cabin" />
+            </div>
+            <div class="form-group">
+              <label>Mo ta</label>
+              <textarea [(ngModel)]="propertyForm.description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Dia chi *</label>
+                <input type="text" [(ngModel)]="propertyForm.address" name="address" />
+              </div>
+              <div class="form-group">
+                <label>Thanh pho *</label>
+                <input type="text" [(ngModel)]="propertyForm.city" name="city" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Quoc gia</label>
+              <input type="text" [(ngModel)]="propertyForm.country" name="country" />
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeEditProperty()">Huy</button>
+              <button type="submit" class="btn-primary" [disabled]="isSavingProperty()">
+                @if (isSavingProperty()) { Dang luu... } @else { Luu thay doi }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- ===== Add/Edit Room Modal ===== -->
+    @if (showRoomModal()) {
+      <div class="modal-overlay" (click)="closeRoomModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>{{ roomModalMode() === 'edit' ? 'Sua thong tin phong' : 'Them phong moi' }}</h2>
+            <button class="btn-close" (click)="closeRoomModal()">&times;</button>
+          </div>
+          <form (ngSubmit)="saveRoom()" class="modal-form">
             <div class="form-group">
               <label>Loai phong *</label>
               <input type="text" [(ngModel)]="roomForm.roomType" name="roomType" placeholder="VD: Deluxe, Standard..." />
@@ -86,14 +212,90 @@
               <input type="number" [(ngModel)]="roomForm.basePrice" name="basePrice" min="0" placeholder="500000" />
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" (click)="showAddRoom.set(false)">Huy</button>
-              <button type="submit" class="btn-primary" [disabled]="isAddingRoom()">
-                @if (isAddingRoom()) { Dang them... } @else { Them phong }
+              <button type="button" class="btn-secondary" (click)="closeRoomModal()">Huy</button>
+              <button type="submit" class="btn-primary" [disabled]="isSavingRoom()">
+                @if (isSavingRoom()) {
+                  {{ roomModalMode() === 'edit' ? 'Dang luu...' : 'Dang them...' }}
+                } @else {
+                  {{ roomModalMode() === 'edit' ? 'Luu thay doi' : 'Them phong' }}
+                }
               </button>
             </div>
           </form>
         </div>
       </div>
     }
+
+    <!-- ===== Delete Room Confirm Modal ===== -->
+    @if (showDeleteRoomConfirm() && deletingRoom()) {
+      <div class="modal-overlay" (click)="closeDeleteRoom()">
+        <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Xoa phong?</h2>
+            <button class="btn-close" (click)="closeDeleteRoom()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Ban sap xoa phong <strong>{{ deletingRoom()!.roomType }}</strong>. Hanh dong nay <strong>khong the hoan tac</strong>.</p>
+            <p class="text-muted">Phong se khong the xoa neu da co don dat phong. Hay xoa hoac huy cac don dat phong truoc.</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeDeleteRoom()">Huy</button>
+            <button type="button" class="btn-danger" [disabled]="isDeletingRoom()" (click)="confirmDeleteRoom()">
+              @if (isDeletingRoom()) { Dang xoa... } @else { Xoa phong }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ===== Room Images Modal ===== -->
+    @if (showRoomImagesModal() && managingRoom()) {
+      <div class="modal-overlay" (click)="closeRoomImagesModal()">
+        <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Anh phong: {{ managingRoom()!.roomType }}</h2>
+            <button class="btn-close" (click)="closeRoomImagesModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="images-toolbar">
+              <span class="text-muted">{{ roomImages().length }} anh</span>
+              <label class="btn-primary" [class.disabled]="isUploadingRoomImages()">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                @if (isUploadingRoomImages()) { Dang upload... } @else { Tai anh len }
+                <input type="file" multiple accept="image/*" (change)="onRoomFilesSelected($event)" hidden [disabled]="isUploadingRoomImages()" />
+              </label>
+            </div>
+
+            @if (isLoadingRoomImages()) {
+              <div class="empty-rooms">Dang tai anh...</div>
+            } @else if (roomImages().length === 0) {
+              <div class="empty-rooms">Chua co anh nao cho phong nay.</div>
+            } @else {
+              <div class="gallery-grid">
+                @for (image of roomImages(); track image.id) {
+                  <div class="gallery-item" [class.thumbnail]="image.isThumbnail">
+                    <img [src]="image.imageUrl" [alt]="managingRoom()!.roomType" loading="lazy" />
+                    @if (image.isThumbnail) {
+                      <span class="thumbnail-badge">THUMBNAIL</span>
+                    }
+                    <div class="gallery-overlay">
+                      @if (!image.isThumbnail) {
+                        <button class="overlay-btn" (click)="setRoomThumbnail(image)" title="Dat lam thumbnail">
+                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8L14 12L15 17.5L10 15L5 17.5L6 12L2 8L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                        </button>
+                      }
+                      <button class="overlay-btn overlay-btn-danger" (click)="deleteRoomImage(image)" title="Xoa">
+                        <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
   }
 </div>

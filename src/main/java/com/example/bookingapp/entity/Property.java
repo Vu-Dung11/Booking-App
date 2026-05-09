@@ -37,5 +37,7 @@ public class  Property {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
-
+    /** Computed: URL ảnh thumbnail (set bởi service trước khi trả response). Không persist. */
+    @Transient
+    private String thumbnailUrl;
 }

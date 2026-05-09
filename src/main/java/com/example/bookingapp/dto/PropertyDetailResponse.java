@@ -20,5 +20,7 @@ public class PropertyDetailResponse {
     private String address;
     private String city;
     private String country;
+    private Boolean isActive;
+    private String thumbnailUrl;
     private List<RoomSearchResponse> rooms;
 }

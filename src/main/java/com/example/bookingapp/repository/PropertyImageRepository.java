@@ -13,4 +13,7 @@ public interface PropertyImageRepository extends JpaRepository<PropertyImage, Lo
 
     // Kiểm tra xem Homestay đã có ảnh Thumbnail chưa
     boolean existsByPropertyIdAndIsThumbnailTrue(Long propertyId);
+
+    // Tìm ảnh thumbnail hiện tại của property (nếu có)
+    java.util.Optional<PropertyImage> findFirstByPropertyIdAndIsThumbnailTrue(Long propertyId);
 }

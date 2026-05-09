@@ -28,9 +28,13 @@
       @for (property of filteredProperties; track property.id) {
         <div class="property-card" appAnimateOnScroll>
           <div class="card-image">
-            <div class="image-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            </div>
+            @if (property.thumbnailUrl) {
+              <img [src]="property.thumbnailUrl" [alt]="property.name" class="card-thumb" loading="lazy" />
+            } @else {
+              <div class="image-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+            }
             <span class="status-chip" [class.active]="property.isActive" [class.inactive]="!property.isActive">
               {{ property.isActive ? 'Dang hien thi' : 'Da an' }}
             </span>

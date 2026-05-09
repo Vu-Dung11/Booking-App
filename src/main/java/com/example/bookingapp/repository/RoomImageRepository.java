@@ -12,4 +12,9 @@ public interface RoomImageRepository extends JpaRepository<RoomImage, Long> {
 
     // Kiểm tra xem phòng này đã có ảnh Thumbnail (ảnh đại diện) chưa
     boolean existsByRoomIdAndIsThumbnailTrue(Long roomId);
+
+    // Tìm ảnh thumbnail hiện tại của room (nếu có)
+    java.util.Optional<RoomImage> findFirstByRoomIdAndIsThumbnailTrue(Long roomId);
+
+    void deleteByRoomId(Long roomId);
 }

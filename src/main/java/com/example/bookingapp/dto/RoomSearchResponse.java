@@ -12,4 +12,6 @@ public class RoomSearchResponse {
     private String roomType;
     private BigDecimal price;
     private Integer capacity;
+    private Integer quantity;
+    private String thumbnailUrl;
 }

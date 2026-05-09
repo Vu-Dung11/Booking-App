@@ -3,15 +3,17 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, Page } from '../../../shared/models/api-response.model';
-import { Property } from '../models/property.model';
+import { Property, PropertyImage, RoomImage } from '../models/property.model';
 
 export interface PropertyDetailResponse {
-  propertyId: number;
+  propetyId: number;
   name: string;
   description: string;
   address: string;
   city: string;
   country: string;
+  isActive: boolean;
+  thumbnailUrl?: string | null;
   rooms: RoomSearchResponse[];
 }
 
@@ -20,6 +22,8 @@ export interface RoomSearchResponse {
   roomType: string;
   price: number;
   capacity: number;
+  quantity?: number;
+  thumbnailUrl?: string | null;
 }
 
 export interface PropertyRequest {
@@ -46,6 +50,7 @@ export class PropertyService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/host/properties`;
 
+  // ===================== Property CRUD =====================
   getProperties(page = 0, size = 10): Observable<Page<Property>> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -68,48 +73,81 @@ export class PropertyService {
   }
 
   createProperty(request: PropertyRequest): Observable<Property> {
-    return this.http.post<ApiResponse<Property>>(this.apiUrl, request).pipe(
-      map(res => res.data)
-    );
+    return this.http.post<ApiResponse<Property>>(this.apiUrl, request).pipe(map(r => r.data));
   }
 
   updateProperty(id: number, request: PropertyRequest): Observable<Property> {
-    return this.http.put<ApiResponse<Property>>(`${this.apiUrl}/${id}`, request).pipe(
-      map(res => res.data)
-    );
+    return this.http.put<ApiResponse<Property>>(`${this.apiUrl}/${id}`, request).pipe(map(r => r.data));
   }
 
-  /** Soft delete: ẩn homestay khỏi tìm kiếm public, dữ liệu được giữ. */
   deactivateProperty(id: number): Observable<Property> {
-    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(
-      map(res => res.data)
-    );
+    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/deactivate`, {}).pipe(map(r => r.data));
   }
 
   activateProperty(id: number): Observable<Property> {
-    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/activate`, {}).pipe(
-      map(res => res.data)
-    );
+    return this.http.patch<ApiResponse<Property>>(`${this.apiUrl}/${id}/activate`, {}).pipe(map(r => r.data));
   }
 
-  /** Hard delete: xoá vĩnh viễn (backend sẽ chặn nếu còn ràng buộc khoá ngoại). */
   deleteProperty(id: number): Observable<string> {
-    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.data)
-    );
+    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${id}`).pipe(map(r => r.data));
   }
 
+  // ===================== Room CRUD =====================
   addRoom(propertyId: number, request: RoomRequest): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/rooms`, request).pipe(
-      map(res => res.data)
-    );
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/rooms`, request).pipe(map(r => r.data));
   }
 
-  uploadImages(propertyId: number, files: File[]): Observable<any> {
+  updateRoom(propertyId: number, roomId: number, request: RoomRequest): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}`, request).pipe(map(r => r.data));
+  }
+
+  deleteRoom(propertyId: number, roomId: number): Observable<string> {
+    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}`).pipe(map(r => r.data));
+  }
+
+  // ===================== Property images =====================
+  uploadPropertyImages(propertyId: number, files: File[]): Observable<PropertyImage[]> {
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${propertyId}/images`, formData).pipe(
-      map(res => res.data)
-    );
+    return this.http.post<ApiResponse<PropertyImage[]>>(`${this.apiUrl}/${propertyId}/images`, formData)
+      .pipe(map(r => r.data));
+  }
+
+  getPropertyImages(propertyId: number): Observable<PropertyImage[]> {
+    return this.http.get<ApiResponse<PropertyImage[]>>(`${this.apiUrl}/${propertyId}/images`)
+      .pipe(map(r => r.data));
+  }
+
+  deletePropertyImage(propertyId: number, imageId: number): Observable<string> {
+    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${propertyId}/images/${imageId}`)
+      .pipe(map(r => r.data));
+  }
+
+  setPropertyThumbnail(propertyId: number, imageId: number): Observable<PropertyImage> {
+    return this.http.patch<ApiResponse<PropertyImage>>(`${this.apiUrl}/${propertyId}/images/${imageId}/thumbnail`, {})
+      .pipe(map(r => r.data));
+  }
+
+  // ===================== Room images =====================
+  uploadRoomImages(propertyId: number, roomId: number, files: File[]): Observable<RoomImage[]> {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return this.http.post<ApiResponse<RoomImage[]>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}/images`, formData)
+      .pipe(map(r => r.data));
+  }
+
+  getRoomImages(propertyId: number, roomId: number): Observable<RoomImage[]> {
+    return this.http.get<ApiResponse<RoomImage[]>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}/images`)
+      .pipe(map(r => r.data));
+  }
+
+  deleteRoomImage(propertyId: number, roomId: number, imageId: number): Observable<string> {
+    return this.http.delete<ApiResponse<string>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}/images/${imageId}`)
+      .pipe(map(r => r.data));
+  }
+
+  setRoomThumbnail(propertyId: number, roomId: number, imageId: number): Observable<RoomImage> {
+    return this.http.patch<ApiResponse<RoomImage>>(`${this.apiUrl}/${propertyId}/rooms/${roomId}/images/${imageId}/thumbnail`, {})
+      .pipe(map(r => r.data));
   }
 }
