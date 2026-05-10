@@ -1,43 +1,44 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Dat phong</h1>
-      <p class="page-subtitle">Tat ca don dat phong tren homestay cua ban (chi xem)</p>
+      <h1 class="page-title">Đặt phòng</h1>
+      <p class="page-subtitle">Quản lý các đơn đặt phòng trên homestay của bạn</p>
     </div>
   </div>
 
   <div class="card" appAnimateOnScroll>
     <div class="card-toolbar">
       <div class="toolbar-left">
-        <span class="total-label">{{ totalElements() }} don dat phong</span>
+        <span class="total-label">{{ totalElements() }} đơn đặt phòng</span>
       </div>
       <div class="toolbar-right">
         <select class="filter-select" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
-          <option value="ALL">Tat ca trang thai</option>
-          <option value="PENDING">Cho xu ly</option>
-          <option value="CONFIRMED">Da xac nhan</option>
-          <option value="COMPLETED">Hoan thanh</option>
-          <option value="CANCELLED">Da huy</option>
+          <option value="ALL">Tất cả trạng thái</option>
+          <option value="PENDING">Chờ thanh toán</option>
+          <option value="CONFIRMED">Đã xác nhận</option>
+          <option value="COMPLETED">Đã hoàn tất</option>
+          <option value="CANCELLED">Đã huỷ</option>
         </select>
       </div>
     </div>
 
     @if (isLoading()) {
-      <div class="loading-state">Dang tai du lieu...</div>
+      <div class="loading-state">Đang tải dữ liệu...</div>
     } @else if (bookings().length === 0) {
-      <div class="empty-state">Khong co don dat phong nao.</div>
+      <div class="empty-state">Không có đơn đặt phòng nào.</div>
     } @else {
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Khach hang</th>
-              <th>Homestay / Phong</th>
+              <th>Khách hàng</th>
+              <th>Homestay / Phòng</th>
               <th>Check-in</th>
               <th>Check-out</th>
-              <th>Tong tien</th>
-              <th>Trang thai</th>
+              <th>Tổng tiền</th>
+              <th>Trạng thái</th>
+              <th class="text-right">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -63,7 +64,24 @@
                 <td class="text-muted">{{ formatDate(booking.checkOutDate) }}</td>
                 <td class="fw-600">{{ formatPrice(booking.totalPrice) }}</td>
                 <td>
-                  <span class="badge" [ngClass]="getStatusClass(booking.status)">{{ booking.status }}</span>
+                  <span class="badge" [ngClass]="getStatusClass(booking.status)">{{ getStatusLabel(booking.status) }}</span>
+                </td>
+                <td class="actions-cell">
+                  @if (booking.status === 'PENDING') {
+                    <button class="btn-action btn-success-action" title="Xác nhận thanh toán" (click)="openQuickConfirm(booking)">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="btn-action btn-danger-action" title="Huỷ đơn" (click)="openQuickCancel(booking)">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                  } @else if (booking.status === 'CONFIRMED') {
+                    <button class="btn-action btn-danger-action" title="Huỷ đơn" (click)="openQuickCancel(booking)">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                  }
+                  <a class="btn-action btn-view-action" title="Chi tiết" [routerLink]="['/host/bookings', booking.id]">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C2 4 4.5 2.5 7 2.5C9.5 2.5 12 4 13 7C12 10 9.5 11.5 7 11.5C4.5 11.5 2 10 1 7Z" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                  </a>
                 </td>
               </tr>
             }
@@ -83,4 +101,58 @@
       </div>
     }
   </div>
+
+  <!-- ===== Quick Confirm Modal ===== -->
+  @if (showQuickConfirm() && actionTarget()) {
+    <div class="modal-overlay" (click)="closeQuickConfirm()">
+      <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Xác nhận thanh toán?</h2>
+          <button class="btn-close" (click)="closeQuickConfirm()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Xác nhận khách <strong>{{ actionTarget()!.guest?.fullName }}</strong> đã thanh toán đơn <strong>#{{ actionTarget()!.id }}</strong> ({{ formatPrice(actionTarget()!.totalPrice) }}).</p>
+          <p class="text-muted">Phương thức mặc định: <strong>Tiền mặt</strong>. Cần phương thức khác hoặc nhập mã giao dịch? Hãy mở trang chi tiết.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeQuickConfirm()">Đóng</button>
+          <button type="button" class="btn-primary" [disabled]="isProcessingAction()" (click)="submitQuickConfirm()">
+            @if (isProcessingAction()) { Đang xử lý... } @else { Xác nhận }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Quick Cancel Modal ===== -->
+  @if (showQuickCancel() && actionTarget()) {
+    <div class="modal-overlay" (click)="closeQuickCancel()">
+      <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Huỷ đơn đặt phòng?</h2>
+          <button class="btn-close" (click)="closeQuickCancel()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="warning-box">
+            <strong>Hành động này không thể hoàn tác.</strong>
+            Phòng sẽ được trả lại kho.
+          </div>
+          @if (actionTarget()!.status === 'CONFIRMED') {
+            <p class="text-muted">Khoản thanh toán đã ghi nhận sẽ được đánh dấu <strong>REFUNDED</strong>. Hoàn tiền qua cổng thanh toán cần xử lý thủ công ngoài hệ thống.</p>
+          }
+          <div class="form-group">
+            <label>Lý do huỷ (tuỳ chọn)</label>
+            <textarea [(ngModel)]="cancelReason" name="cancelReason" rows="3"
+              placeholder="VD: khách yêu cầu huỷ, đổi lịch..."></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeQuickCancel()">Đóng</button>
+          <button type="button" class="btn-danger" [disabled]="isProcessingAction()" (click)="submitQuickCancel()">
+            @if (isProcessingAction()) { Đang huỷ... } @else { Xác nhận huỷ }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

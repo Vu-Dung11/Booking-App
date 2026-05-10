@@ -32,5 +32,5 @@ public class Payment {
     private String transactionId; // Mã giao dịch từ cổng thanh toán
     private LocalDateTime createdAt;
 
-    public enum PaymentStatus {PENDING, SUCCESS, FAILED}
+    public enum PaymentStatus {PENDING, SUCCESS, FAILED, REFUNDED}
 }

@@ -29,6 +29,10 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/bookings/booking-list/booking-list.component').then(m => m.BookingListComponent)
       },
       {
+        path: 'bookings/:id',
+        loadComponent: () => import('./admin/bookings/booking-detail/booking-detail.component').then(m => m.BookingDetailComponent)
+      },
+      {
         path: 'payments',
         loadComponent: () => import('./admin/payments/payment-list/payment-list.component').then(m => m.PaymentListComponent)
       },

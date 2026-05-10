@@ -1,0 +1,258 @@
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <a routerLink="/host/bookings" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tất cả đặt phòng
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Đang tải...</div>
+  } @else if (!booking()) {
+    <div class="empty-state">Không tìm thấy đơn đặt phòng.</div>
+  } @else {
+    <!-- Page title + status -->
+    <div class="title-bar" appAnimateOnScroll>
+      <h1 class="detail-title">Đơn đặt phòng #{{ booking()!.id }}</h1>
+      <span class="status-pill" [ngClass]="getStatusClass(booking()!.status)">
+        {{ getStatusLabel(booking()!.status) }}
+      </span>
+    </div>
+
+    <!-- Pending countdown alert -->
+    @if (booking()!.status === 'PENDING' && booking()!.pendingExpiresAt) {
+      <div class="alert alert-warning" appAnimateOnScroll>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6V10L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="alert-body">
+          <strong>Đơn này đang chờ thanh toán.</strong>
+          @if (countdownDisplay() && countdownDisplay() !== 'Đã hết hạn') {
+            Hết hạn sau <span class="countdown">{{ countdownDisplay() }}</span>.
+          } @else if (countdownDisplay() === 'Đã hết hạn') {
+            Đã hết hạn.
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ===== Section 1: Tóm tắt ===== -->
+    <section class="section" appAnimateOnScroll>
+      <h2 class="section-title">Tóm tắt</h2>
+      <div class="summary-card">
+        <!-- Cột trái: chuyến đi -->
+        <div class="summary-col">
+          <h3 class="col-title">Thông tin chuyến đi</h3>
+          @if (booking()!.room.thumbnailUrl) {
+            <img [src]="booking()!.room.thumbnailUrl" alt="Phòng" class="room-thumb" loading="lazy" />
+          }
+          <div class="info-row">
+            <span class="info-label">Homestay</span>
+            <span class="info-value">{{ booking()!.property.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Địa chỉ</span>
+            <span class="info-value">{{ booking()!.property.address }}, {{ booking()!.property.city }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Loại phòng</span>
+            <span class="info-value">{{ booking()!.room.roomType }} ({{ booking()!.room.capacity }} người/phòng)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Số phòng đặt</span>
+            <span class="info-value">{{ booking()!.roomQuantity }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Check-in</span>
+            <span class="info-value">{{ formatDate(booking()!.checkInDate) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Check-out</span>
+            <span class="info-value">{{ formatDate(booking()!.checkOutDate) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Số đêm</span>
+            <span class="info-value">{{ nights() }} đêm</span>
+          </div>
+          <div class="info-row total-row">
+            <span class="info-label">Tổng tiền</span>
+            <span class="info-value total-amount">{{ formatPrice(booking()!.totalPrice) }}</span>
+          </div>
+        </div>
+
+        <!-- Cột phải: khách -->
+        <div class="summary-col">
+          <h3 class="col-title">Thông tin khách</h3>
+          <div class="guest-block">
+            <div class="guest-avatar">{{ (booking()!.guest.fullName || '?').charAt(0) }}</div>
+            <div class="guest-name-block">
+              <span class="guest-fullname">{{ booking()!.guest.fullName }}</span>
+              <span class="guest-id">ID khách #{{ booking()!.guest.id }}</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <a class="info-link" [href]="'mailto:' + booking()!.guest.email">{{ booking()!.guest.email }}</a>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Số điện thoại</span>
+            @if (booking()!.guest.phoneNumber) {
+              <a class="info-link" [href]="'tel:' + booking()!.guest.phoneNumber">{{ booking()!.guest.phoneNumber }}</a>
+            } @else {
+              <span class="info-value text-muted">Chưa có</span>
+            }
+          </div>
+          <div class="info-row">
+            <span class="info-label">Đặt lúc</span>
+            <span class="info-value">{{ formatDateTime(booking()!.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Section 2: Thanh toán ===== -->
+    <section class="section" appAnimateOnScroll>
+      <h2 class="section-title">Lịch sử thanh toán</h2>
+      <div class="card">
+        @if (booking()!.payments.length === 0) {
+          <div class="empty-payments">Chưa có giao dịch thanh toán nào.</div>
+        } @else {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Phương thức</th>
+                  <th>Số tiền</th>
+                  <th>Mã giao dịch</th>
+                  <th>Trạng thái</th>
+                  <th>Thời gian</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of booking()!.payments; track p.id) {
+                  <tr>
+                    <td class="fw-500">#{{ p.id }}</td>
+                    <td>{{ getPaymentMethodLabel(p.paymentMethod) }}</td>
+                    <td class="fw-600">{{ formatPrice(p.amount) }}</td>
+                    <td class="text-muted txn-id">{{ p.transactionId || '—' }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="getPaymentStatusClass(p.status)">{{ p.status }}</span>
+                    </td>
+                    <td class="text-muted">{{ formatDateTime(p.createdAt) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ===== Section 3: Hành động ===== -->
+    <section class="section" appAnimateOnScroll>
+      <h2 class="section-title">Hành động</h2>
+      <div class="actions-card">
+        @switch (booking()!.status) {
+          @case ('PENDING') {
+            <p class="action-desc">
+              Khi khách đã thanh toán bằng tiền mặt hoặc chuyển khoản, bạn có thể xác nhận thủ công để chuyển đơn sang trạng thái "Đã xác nhận".
+              Hoặc huỷ nếu khách không tiến hành thanh toán.
+            </p>
+            <div class="action-buttons">
+              <button class="btn-primary" (click)="openConfirmModal()">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Xác nhận thanh toán thủ công
+              </button>
+              <button class="btn-danger" (click)="openCancelModal()">Huỷ đơn</button>
+            </div>
+          }
+          @case ('CONFIRMED') {
+            <p class="action-desc">Đơn đã được thanh toán. Bạn có thể huỷ nếu cần (sẽ hoàn tiền cho khách thủ công ngoài hệ thống).</p>
+            <div class="action-buttons">
+              <button class="btn-danger" (click)="openCancelModal()">Huỷ đơn</button>
+            </div>
+          }
+          @case ('COMPLETED') {
+            <p class="action-desc text-muted">
+              Chuyến đi đã hoàn tất ngày {{ formatDate(booking()!.checkOutDate) }}. Không có hành động khả dụng.
+            </p>
+          }
+          @case ('CANCELLED') {
+            <p class="action-desc text-muted">Đơn đã bị huỷ. Không có hành động khả dụng.</p>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- ===== Confirm Modal ===== -->
+    @if (showConfirmModal()) {
+      <div class="modal-overlay" (click)="closeConfirmModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Xác nhận thanh toán thủ công</h2>
+            <button class="btn-close" (click)="closeConfirmModal()">&times;</button>
+          </div>
+          <form (ngSubmit)="submitConfirm()" class="modal-form">
+            <div class="form-group">
+              <label>Phương thức thanh toán</label>
+              <select [(ngModel)]="confirmForm.paymentMethod" name="paymentMethod">
+                <option value="CASH">Tiền mặt</option>
+                <option value="BANK_TRANSFER">Chuyển khoản</option>
+                <option value="OTHER">Khác</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Mã giao dịch (tuỳ chọn)</label>
+              <input type="text" [(ngModel)]="confirmForm.transactionId" name="transactionId"
+                placeholder="VD: số phiếu thu, mã chuyển khoản..." />
+            </div>
+            <div class="form-group">
+              <label>Ghi chú (tuỳ chọn)</label>
+              <textarea [(ngModel)]="confirmForm.note" name="note" rows="2"
+                placeholder="Ghi chú nội bộ..."></textarea>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeConfirmModal()">Huỷ</button>
+              <button type="submit" class="btn-primary" [disabled]="isConfirming()">
+                @if (isConfirming()) { Đang xử lý... } @else { Xác nhận }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- ===== Cancel Modal ===== -->
+    @if (showCancelModal()) {
+      <div class="modal-overlay" (click)="closeCancelModal()">
+        <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Huỷ đơn đặt phòng?</h2>
+            <button class="btn-close" (click)="closeCancelModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="warning-box">
+              <strong>Hành động này không thể hoàn tác.</strong>
+              Phòng sẽ được trả lại kho và khách sẽ không nhận được phòng.
+            </div>
+            @if (booking()!.status === 'CONFIRMED') {
+              <p class="text-muted">
+                Khoản thanh toán đã ghi nhận sẽ được đánh dấu <strong>REFUNDED</strong>. Việc hoàn tiền qua cổng thanh toán cần xử lý thủ công ngoài hệ thống.
+              </p>
+            }
+            <div class="form-group">
+              <label>Lý do huỷ (tuỳ chọn)</label>
+              <textarea [(ngModel)]="cancelReason" name="cancelReason" rows="3"
+                placeholder="VD: khách yêu cầu huỷ, đổi lịch..."></textarea>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeCancelModal()">Đóng</button>
+            <button type="button" class="btn-danger" [disabled]="isCancelling()" (click)="submitCancel()">
+              @if (isCancelling()) { Đang huỷ... } @else { Xác nhận huỷ đơn }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

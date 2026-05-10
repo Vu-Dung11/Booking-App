@@ -1,7 +1,10 @@
 package com.example.bookingapp.controller;
 
 import com.example.bookingapp.dto.ApiResponse;
+import com.example.bookingapp.dto.BookingDetailResponse;
 import com.example.bookingapp.entity.Booking;
+import com.example.bookingapp.form.CancelBookingRequest;
+import com.example.bookingapp.form.ConfirmBookingRequest;
 import com.example.bookingapp.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,8 +15,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Read-only API: HOST chỉ xem được booking của các property thuộc mình.
- * Không có endpoint xác nhận check-out hay sửa booking — host không can thiệp đơn của khách.
+ * Endpoints quản lý booking dành cho HOST.
+ * Read-only list/detail + manual confirm/cancel cho các đơn thanh toán offline
+ * hoặc khách gọi điện huỷ.
  */
 @RestController
 @RequestMapping("/api/v1/host/bookings")
@@ -33,7 +37,23 @@ public class HostBookingController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Booking> getById(@PathVariable Long id) {
-        return ApiResponse.success(bookingService.getBookingForCurrentHost(id));
+    public ApiResponse<BookingDetailResponse> getById(@PathVariable Long id) {
+        return ApiResponse.success(bookingService.getMyBookingDetail(id));
+    }
+
+    /** Host xác nhận thanh toán thủ công cho booking PENDING (CASH/BANK_TRANSFER/OTHER). */
+    @PostMapping("/{id}/confirm")
+    public ApiResponse<BookingDetailResponse> confirm(
+            @PathVariable Long id,
+            @RequestBody(required = false) ConfirmBookingRequest request) {
+        return ApiResponse.success(bookingService.confirmMyBooking(id, request));
+    }
+
+    /** Host huỷ booking PENDING hoặc CONFIRMED. Hoàn lại inventory + đánh dấu payment REFUNDED. */
+    @PostMapping("/{id}/cancel")
+    public ApiResponse<BookingDetailResponse> cancel(
+            @PathVariable Long id,
+            @RequestBody(required = false) CancelBookingRequest request) {
+        return ApiResponse.success(bookingService.cancelMyBooking(id, request));
     }
 }

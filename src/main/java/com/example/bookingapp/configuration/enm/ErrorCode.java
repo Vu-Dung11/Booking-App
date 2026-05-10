@@ -27,7 +27,8 @@ public enum ErrorCode {
     IMAGE_NOT_BELONG_TO_PROPERTY(400, "Ảnh không thuộc về homestay này"),
     IMAGE_NOT_BELONG_TO_ROOM(400, "Ảnh không thuộc về phòng này"),
     ROOM_NOT_BELONG_TO_PROPERTY(400, "Phòng không thuộc về homestay này"),
-    ROOM_HAS_BOOKING(409, "Không thể xoá phòng vì còn đơn đặt phòng. Hãy chờ các đơn hoàn tất hoặc huỷ trước.");
+    ROOM_HAS_BOOKING(409, "Không thể xoá phòng vì còn đơn đặt phòng. Hãy chờ các đơn hoàn tất hoặc huỷ trước."),
+    INVALID_BOOKING_STATUS_FOR_CANCEL(410, "Đơn hàng đã hoàn tất hoặc đã huỷ trước đó, không thể huỷ thêm.");
 
     private final int code;
     private final String message;

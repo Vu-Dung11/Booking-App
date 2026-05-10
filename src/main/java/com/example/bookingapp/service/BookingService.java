@@ -1,13 +1,21 @@
 package com.example.bookingapp.service;
 
 import com.example.bookingapp.configuration.enm.ErrorCode;
+import com.example.bookingapp.dto.BookingDetailResponse;
 import com.example.bookingapp.entity.Booking;
+import com.example.bookingapp.entity.Payment;
+import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Room;
+import com.example.bookingapp.entity.RoomImage;
 import com.example.bookingapp.entity.RoomInventory;
 import com.example.bookingapp.entity.User;
 import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.form.BookingRequest;
+import com.example.bookingapp.form.CancelBookingRequest;
+import com.example.bookingapp.form.ConfirmBookingRequest;
 import com.example.bookingapp.repository.BookingRepository;
+import com.example.bookingapp.repository.PaymentRepository;
+import com.example.bookingapp.repository.RoomImageRepository;
 import com.example.bookingapp.repository.RoomInventoryRepository;
 import com.example.bookingapp.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +34,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -38,6 +47,8 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final SecurityUtils securityUtils;
+    private final PaymentRepository paymentRepository;
+    private final RoomImageRepository roomImageRepository;
 
     // SELF-INJECTION: Dùng để gọi method nội bộ QUA Spring Proxy
     // Tránh vấn đề self-invocation khiến @Transactional bị bỏ qua
@@ -254,5 +265,176 @@ public class BookingService {
             throw new AppException(ErrorCode.NOT_PROPERTY_OWNER);
         }
         return booking;
+    }
+
+    // ============================================================
+    // HOST-SCOPED ACTIONS — confirm offline / cancel
+    // ============================================================
+
+    /** Lấy chi tiết booking đầy đủ (guest contact, payments, redis ttl) cho host. */
+    @Transactional(readOnly = true)
+    public BookingDetailResponse getMyBookingDetail(Long bookingId) {
+        Booking booking = getBookingForCurrentHost(bookingId);
+        return buildBookingDetail(booking);
+    }
+
+    /**
+     * Host xác nhận thanh toán thủ công (offline). Booking phải đang PENDING.
+     * Tạo Payment record + xoá Redis timeout key + chuyển status sang CONFIRMED.
+     */
+    @Transactional
+    public BookingDetailResponse confirmMyBooking(Long bookingId, ConfirmBookingRequest request) {
+        Booking booking = getBookingForCurrentHost(bookingId);
+        if (booking.getStatus() != Booking.BookingStatus.PENDING) {
+            throw new AppException(ErrorCode.NOT_IN_PENDING_STATUS);
+        }
+
+        // 1. Chuyển trạng thái booking
+        booking.setStatus(Booking.BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
+        // 2. Tạo Payment record
+        String method = request != null && request.getPaymentMethod() != null
+                ? request.getPaymentMethod() : "CASH";
+        String txnId = request != null && request.getTransactionId() != null
+                && !request.getTransactionId().isBlank()
+                ? request.getTransactionId()
+                : "OFFLINE-" + System.currentTimeMillis();
+
+        Payment payment = Payment.builder()
+                .booking(booking)
+                .amount(booking.getTotalPrice())
+                .paymentMethod(method)
+                .status(Payment.PaymentStatus.SUCCESS)
+                .transactionId(txnId)
+                .createdAt(LocalDateTime.now())
+                .build();
+        paymentRepository.save(payment);
+
+        // 3. Xoá Redis timeout key (huỷ auto-cancel job)
+        String redisKey = "booking:timeout:" + bookingId;
+        redisTemplate.delete(redisKey);
+
+        Long hostId = securityUtils.getCurrentUser().getId();
+        log.info("Host {} confirmed booking {} via offline payment ({}). Note: {}",
+                hostId, bookingId, method,
+                request != null ? request.getNote() : null);
+
+        return buildBookingDetail(booking);
+    }
+
+    /**
+     * Host huỷ booking PENDING hoặc CONFIRMED. Hoàn lại inventory + đánh dấu
+     * payment REFUNDED (nếu có) + xoá Redis timeout key.
+     */
+    @Transactional
+    public BookingDetailResponse cancelMyBooking(Long bookingId, CancelBookingRequest request) {
+        Booking booking = getBookingForCurrentHost(bookingId);
+
+        Booking.BookingStatus status = booking.getStatus();
+        if (status != Booking.BookingStatus.PENDING && status != Booking.BookingStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS_FOR_CANCEL);
+        }
+
+        // 1. Hoàn lại inventory
+        List<RoomInventory> lockedInv = inventoryRepository.findAndLockInventoryByRoomAndDates(
+                booking.getRoom().getId(), booking.getCheckInDate(), booking.getCheckOutDate());
+        int roomsToRestore = booking.getRoomQuantity();
+        for (RoomInventory inv : lockedInv) {
+            inv.setAvailableCount(inv.getAvailableCount() + roomsToRestore);
+        }
+        inventoryRepository.saveAll(lockedInv);
+
+        // 2. Chuyển booking sang CANCELLED
+        booking.setStatus(Booking.BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        // 3. Nếu có Payment SUCCESS → đánh dấu REFUNDED (không refund tiền thật,
+        //    chỉ ghi nhận trạng thái cho host theo dõi)
+        Optional<Payment> successPayment = paymentRepository
+                .findFirstByBooking_IdAndStatusOrderByCreatedAtDesc(bookingId, Payment.PaymentStatus.SUCCESS);
+        successPayment.ifPresent(p -> {
+            p.setStatus(Payment.PaymentStatus.REFUNDED);
+            paymentRepository.save(p);
+        });
+
+        // 4. Xoá Redis timeout key nếu còn
+        redisTemplate.delete("booking:timeout:" + bookingId);
+
+        Long hostId = securityUtils.getCurrentUser().getId();
+        String reason = request != null ? request.getReason() : null;
+        log.info("Host {} cancelled booking {} (was {}). Reason: {}",
+                hostId, bookingId, status, reason);
+
+        return buildBookingDetail(booking);
+    }
+
+    // ============================================================
+    // helpers
+    // ============================================================
+
+    private BookingDetailResponse buildBookingDetail(Booking booking) {
+        Room room = booking.getRoom();
+        Property property = room.getProperty();
+        User guest = booking.getGuest();
+
+        // Payment history
+        List<Payment> payments = paymentRepository.findByBooking_IdOrderByCreatedAtDesc(booking.getId());
+        List<BookingDetailResponse.PaymentInfo> paymentInfos = payments.stream()
+                .map(p -> BookingDetailResponse.PaymentInfo.builder()
+                        .id(p.getId())
+                        .amount(p.getAmount())
+                        .paymentMethod(p.getPaymentMethod())
+                        .status(p.getStatus() != null ? p.getStatus().name() : null)
+                        .transactionId(p.getTransactionId())
+                        .createdAt(p.getCreatedAt())
+                        .build())
+                .toList();
+
+        // Pending expires at — lấy TTL Redis nếu PENDING
+        LocalDateTime pendingExpiresAt = null;
+        if (booking.getStatus() == Booking.BookingStatus.PENDING) {
+            Long ttlSeconds = redisTemplate.getExpire("booking:timeout:" + booking.getId(), TimeUnit.SECONDS);
+            if (ttlSeconds != null && ttlSeconds > 0) {
+                pendingExpiresAt = LocalDateTime.now().plusSeconds(ttlSeconds);
+            }
+        }
+
+        // Room thumbnail
+        String roomThumb = roomImageRepository.findFirstByRoomIdAndIsThumbnailTrue(room.getId())
+                .map(RoomImage::getImageUrl).orElse(null);
+
+        return BookingDetailResponse.builder()
+                .id(booking.getId())
+                .checkInDate(booking.getCheckInDate())
+                .checkOutDate(booking.getCheckOutDate())
+                .totalPrice(booking.getTotalPrice())
+                .roomQuantity(booking.getRoomQuantity())
+                .status(booking.getStatus().name())
+                .createdAt(booking.getCreatedAt())
+                .pendingExpiresAt(pendingExpiresAt)
+                .guest(BookingDetailResponse.GuestInfo.builder()
+                        .id(guest.getId())
+                        .fullName(guest.getFullName())
+                        .email(guest.getEmail())
+                        .phoneNumber(guest.getPhoneNumber())
+                        .build())
+                .room(BookingDetailResponse.RoomInfo.builder()
+                        .id(room.getId())
+                        .roomType(room.getRoomType())
+                        .capacity(room.getCapacity())
+                        .basePrice(room.getBasePrice())
+                        .quantity(room.getQuantity())
+                        .thumbnailUrl(roomThumb)
+                        .build())
+                .property(BookingDetailResponse.PropertyInfo.builder()
+                        .id(property.getId())
+                        .name(property.getName())
+                        .address(property.getAddress())
+                        .city(property.getCity())
+                        .country(property.getCountry())
+                        .build())
+                .payments(paymentInfos)
+                .build();
     }
 }
