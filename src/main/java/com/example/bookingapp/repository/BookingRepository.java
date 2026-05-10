@@ -19,6 +19,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Có booking nào trên room này không (dùng khi xoá room)
     boolean existsByRoom_Id(Long roomId);
 
+    /**
+     * Lấy các booking active overlap với khoảng [start, endExclusive). Dùng để
+     * tính bookedCount cho từng ngày trong calendar view.
+     * Logic overlap: checkInDate < endExclusive AND checkOutDate > start.
+     */
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT b FROM Booking b
+        WHERE b.room.id = :roomId
+          AND b.status IN (
+              com.example.bookingapp.entity.Booking.BookingStatus.PENDING,
+              com.example.bookingapp.entity.Booking.BookingStatus.CONFIRMED,
+              com.example.bookingapp.entity.Booking.BookingStatus.COMPLETED
+          )
+          AND b.checkInDate < :endExclusive
+          AND b.checkOutDate > :start
+    """)
+    List<Booking> findActiveOverlapping(
+            @org.springframework.data.repository.query.Param("roomId") Long roomId,
+            @org.springframework.data.repository.query.Param("start") LocalDate start,
+            @org.springframework.data.repository.query.Param("endExclusive") LocalDate endExclusive
+    );
+
     // Booking thuộc các property của host hiện tại
     Page<Booking> findByRoom_Property_HostId(Long hostId, Pageable pageable);
     Page<Booking> findByRoom_Property_HostIdAndStatus(Long hostId, Booking.BookingStatus status, Pageable pageable);

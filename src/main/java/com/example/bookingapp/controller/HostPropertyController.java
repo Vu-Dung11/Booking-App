@@ -3,16 +3,24 @@ package com.example.bookingapp.controller;
 import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.dto.ApiResponse;
+import com.example.bookingapp.dto.HostCalendarResponse;
 import com.example.bookingapp.dto.PropertyDetailResponse;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.PropertyImage;
 import com.example.bookingapp.entity.Room;
 import com.example.bookingapp.entity.RoomImage;
+import com.example.bookingapp.form.DayInventoryUpdateRequest;
+import com.example.bookingapp.form.ExtendInventoryRequest;
 import com.example.bookingapp.form.PropertyRequest;
 import com.example.bookingapp.form.RoomRequest;
+import com.example.bookingapp.service.InventoryService;
 import com.example.bookingapp.service.PropertyImageService;
 import com.example.bookingapp.service.PropertyService;
 import com.example.bookingapp.service.RoomImageService;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.util.HashMap;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,6 +46,7 @@ public class HostPropertyController {
     private final PropertyService propertyService;
     private final PropertyImageService propertyImageService;
     private final RoomImageService roomImageService;
+    private final InventoryService inventoryService;
 
     // ===================== PROPERTY =====================
 
@@ -183,6 +192,42 @@ public class HostPropertyController {
             @PathVariable Long imgId) {
         RoomImage img = roomImageService.setThumbnail(pid, rid, imgId);
         return ApiResponse.success(toRoomImageMap(img));
+    }
+
+    // ===================== INVENTORY CALENDAR =====================
+
+    /** Lấy calendar view của property cho khoảng [from, from+days-1]. */
+    @GetMapping("/{pid}/calendar")
+    public ApiResponse<HostCalendarResponse> getCalendar(
+            @PathVariable Long pid,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(defaultValue = "30") int days) {
+        if (days < 1) days = 1;
+        if (days > 90) days = 90;
+        LocalDate to = from.plusDays(days - 1L);
+        return ApiResponse.success(inventoryService.getCalendarForProperty(pid, from, to));
+    }
+
+    /** Bulk update availableCount cho [fromDate, toDate] của 1 room. */
+    @PatchMapping("/{pid}/rooms/{rid}/inventory")
+    public ApiResponse<List<HostCalendarResponse.DayInventory>> bulkUpdateInventory(
+            @PathVariable Long pid,
+            @PathVariable Long rid,
+            @RequestBody DayInventoryUpdateRequest request) {
+        return ApiResponse.success(inventoryService.bulkUpdateInventory(pid, rid, request));
+    }
+
+    /** Mở thêm inventory đến untilDate cho 1 room. */
+    @PostMapping("/{pid}/rooms/{rid}/inventory/extend")
+    public ApiResponse<Map<String, Object>> extendInventory(
+            @PathVariable Long pid,
+            @PathVariable Long rid,
+            @RequestBody ExtendInventoryRequest request) {
+        InventoryService.ExtendResult res = inventoryService.extendInventory(pid, rid, request);
+        Map<String, Object> data = new HashMap<>();
+        data.put("created", res.created());
+        data.put("lastDate", res.lastDate());
+        return ApiResponse.success(data);
     }
 
     // ===================== mappers =====================

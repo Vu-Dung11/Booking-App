@@ -25,6 +25,10 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/properties/property-detail/property-detail.component').then(m => m.PropertyDetailComponent)
       },
       {
+        path: 'properties/:id/calendar',
+        loadComponent: () => import('./admin/properties/calendar/calendar.component').then(m => m.CalendarComponent)
+      },
+      {
         path: 'bookings',
         loadComponent: () => import('./admin/bookings/booking-list/booking-list.component').then(m => m.BookingListComponent)
       },

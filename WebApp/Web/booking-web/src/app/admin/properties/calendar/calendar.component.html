@@ -1,0 +1,199 @@
+<div class="page">
+  <div class="page-header" appAnimateOnScroll>
+    <a [routerLink]="['/host/properties', propertyId]" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {{ propertyName() || 'Quay lại homestay' }}
+    </a>
+  </div>
+
+  <div class="title-bar" appAnimateOnScroll>
+    <h1 class="page-title">Lịch phòng</h1>
+    <div class="month-nav">
+      <button class="nav-btn" (click)="prevMonth()" title="Tháng trước">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="month-label">Tháng {{ monthLabel() }}</span>
+      <button class="nav-btn" (click)="nextMonth()" title="Tháng sau">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend" appAnimateOnScroll>
+    <span class="legend-item"><span class="dot dot-available"></span> Còn trống</span>
+    <span class="legend-item"><span class="dot dot-partial"></span> Có khách</span>
+    <span class="legend-item"><span class="dot dot-full"></span> Đã đầy</span>
+    <span class="legend-item"><span class="dot dot-blocked"></span> Đã khoá</span>
+    <span class="legend-item"><span class="dot dot-unmanaged"></span> Chưa mở lịch</span>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Đang tải lịch...</div>
+  } @else if (!calendar() || calendar()!.rooms.length === 0) {
+    <div class="empty-state">
+      Homestay chưa có phòng nào. Hãy thêm phòng trước khi quản lý lịch.
+      <div style="margin-top:12px;">
+        <a [routerLink]="['/host/properties', propertyId]" class="btn-primary">Quay lại để thêm phòng</a>
+      </div>
+    </div>
+  } @else {
+    <div class="rooms-stack">
+      @for (room of calendar()!.rooms; track room.roomId) {
+        <div class="room-card" appAnimateOnScroll>
+          <div class="room-header">
+            <div class="room-info">
+              <h2 class="room-title">{{ room.roomType }}</h2>
+              <span class="room-meta">{{ room.quantity }} phòng &middot; {{ room.capacity }} người/phòng</span>
+            </div>
+            <div class="room-actions">
+              <button class="btn-secondary" (click)="openExtend(room)">
+                Mở lịch đến...
+              </button>
+              <button class="btn-primary" (click)="openBulkEdit(room)">
+                Sửa nhiều ngày
+              </button>
+            </div>
+          </div>
+
+          <!-- Weekday header -->
+          <div class="weekdays">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+          </div>
+
+          <!-- Grid -->
+          <div class="grid">
+            @for (cell of buildMonthGrid(room); track cell.date + '-' + cell.day) {
+              <div class="cell"
+                   [class.cell-empty]="!cell.inMonth"
+                   [class.cell-unmanaged]="cell.status === 'unmanaged'"
+                   [class.cell-blocked]="cell.status === 'blocked'"
+                   [class.cell-full]="cell.status === 'full'"
+                   [class.cell-partial]="cell.status === 'partial'"
+                   [class.cell-available]="cell.status === 'available'"
+                   [class.clickable]="cell.inMonth && cell.inRange"
+                   (click)="openEditDay(room, cell)">
+                @if (cell.inMonth) {
+                  <span class="cell-day">{{ cell.day }}</span>
+                  @if (cell.data && cell.data.hasInventory) {
+                    <span class="cell-counts">{{ cell.data.availableCount }}/{{ room.quantity }}</span>
+                    @if (cell.data.bookedCount > 0) {
+                      <span class="cell-booked">{{ cell.data.bookedCount }} đặt</span>
+                    }
+                  } @else if (cell.inRange) {
+                    <span class="cell-counts cell-muted">—</span>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ===== Edit Day Modal ===== -->
+  @if (showEditDay() && editTarget()) {
+    <div class="modal-overlay" (click)="closeEditDay()">
+      <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Sửa lịch ngày {{ editTarget()!.day.date }}</h2>
+          <button class="btn-close" (click)="closeEditDay()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted">Phòng: <strong>{{ editTarget()!.room.roomType }}</strong> &middot; Tổng {{ editTarget()!.room.quantity }} phòng vật lý</p>
+          @if (editTarget()!.day.bookedCount > 0) {
+            <div class="info-box">
+              Ngày này đã có <strong>{{ editTarget()!.day.bookedCount }} đơn</strong> đặt. Bạn không thể đặt số phòng trống thấp hơn (sẽ vượt số phòng vật lý).
+            </div>
+          }
+          <div class="form-group">
+            <label>Số phòng còn trống</label>
+            <input type="number"
+                   [(ngModel)]="editAvailable"
+                   [min]="0"
+                   [max]="editTarget()!.room.quantity - editTarget()!.day.bookedCount" />
+          </div>
+          <div class="preset-row">
+            <button type="button" class="btn-secondary btn-sm" (click)="setEditPreset('open')">Mở hết</button>
+            <button type="button" class="btn-secondary btn-sm" (click)="setEditPreset('block')">Khoá ngày</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeEditDay()">Đóng</button>
+          <button type="button" class="btn-primary" [disabled]="isSavingDay()" (click)="submitEditDay()">
+            @if (isSavingDay()) { Đang lưu... } @else { Lưu }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Bulk Edit Modal ===== -->
+  @if (showBulkEdit() && bulkRoom()) {
+    <div class="modal-overlay" (click)="closeBulkEdit()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Sửa nhiều ngày — {{ bulkRoom()!.roomType }}</h2>
+          <button class="btn-close" (click)="closeBulkEdit()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted">Đặt số phòng còn trống cho mọi ngày trong khoảng. Tổng {{ bulkRoom()!.quantity }} phòng.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Từ ngày</label>
+              <input type="date" [(ngModel)]="bulkForm.fromDate" />
+            </div>
+            <div class="form-group">
+              <label>Đến ngày</label>
+              <input type="date" [(ngModel)]="bulkForm.toDate" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Số phòng trống mỗi ngày</label>
+            <input type="number" [(ngModel)]="bulkForm.availableCount" [min]="0" [max]="bulkRoom()!.quantity" />
+          </div>
+          <div class="preset-row">
+            <button type="button" class="btn-secondary btn-sm" (click)="setBulkPreset('open')">Mở hết</button>
+            <button type="button" class="btn-secondary btn-sm" (click)="setBulkPreset('block')">Khoá khoảng</button>
+          </div>
+          <p class="muted small">
+            Nếu trong khoảng có ngày đã có booking vượt số bạn nhập, hệ thống sẽ từ chối toàn bộ và không thay đổi gì.
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeBulkEdit()">Đóng</button>
+          <button type="button" class="btn-primary" [disabled]="isSavingBulk()" (click)="submitBulk()">
+            @if (isSavingBulk()) { Đang lưu... } @else { Áp dụng }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Extend Modal ===== -->
+  @if (showExtend() && extendRoom()) {
+    <div class="modal-overlay" (click)="closeExtend()">
+      <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Mở lịch đến ngày — {{ extendRoom()!.roomType }}</h2>
+          <button class="btn-close" (click)="closeExtend()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted">Tạo các ngày mới từ ngày cuối hiện tại đến ngày bạn chọn. Mỗi ngày mới sẽ mặc định mở đủ {{ extendRoom()!.quantity }} phòng.</p>
+          <div class="form-group">
+            <label>Mở đến ngày</label>
+            <input type="date" [(ngModel)]="extendForm.untilDate" />
+          </div>
+          <p class="muted small">Tối đa 365 ngày từ hôm nay.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeExtend()">Đóng</button>
+          <button type="button" class="btn-primary" [disabled]="isExtending()" (click)="submitExtend()">
+            @if (isExtending()) { Đang xử lý... } @else { Mở lịch }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
