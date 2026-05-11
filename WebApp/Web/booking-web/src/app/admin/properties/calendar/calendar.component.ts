@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InventoryService } from '../services/inventory.service';
 import { PropertyService } from '../services/property.service';
 import {
+  BookingByDateItem,
   DayInventory,
   HostCalendarResponse,
   RoomCalendar
@@ -12,13 +13,23 @@ import {
 import { AnimateOnScrollDirective } from '../../../shared/directives/animate-on-scroll.directive';
 import { ToastService } from '../../../shared/services/toast.service';
 
+type CellStatus =
+  | 'empty'
+  | 'unmanaged'
+  | 'blocked'
+  | 'blocked-with-booking'
+  | 'partial'
+  | 'full'
+  | 'limited'
+  | 'available';
+
 interface MonthCell {
   date: string;          // ISO yyyy-MM-dd, '' if filler
   day: number;           // 1-31, 0 if filler
   inMonth: boolean;
   inRange: boolean;      // có data từ backend (trong khoảng query)
   data?: DayInventory;
-  status: 'empty' | 'unmanaged' | 'blocked' | 'partial' | 'full' | 'available';
+  status: CellStatus;
 }
 
 @Component({
@@ -36,8 +47,16 @@ export class CalendarComponent implements OnInit {
 
   propertyId = 0;
   propertyName = signal('');
+  propertyActive = signal(true);
   isLoading = signal(true);
   calendar = signal<HostCalendarResponse | null>(null);
+
+  // Drill-down: bookings của ngày đang xem trong Edit Day modal
+  dayBookings = signal<BookingByDateItem[]>([]);
+  isLoadingDayBookings = signal(false);
+
+  // Bulk edit preflight: max availableCount cho range hiện tại
+  bulkMaxAvailable = signal<number | null>(null);
 
   // Current month being viewed
   viewYear = signal(new Date().getFullYear());
@@ -74,7 +93,10 @@ export class CalendarComponent implements OnInit {
 
   private loadProperty(): void {
     this.propertyService.getPropertyById(this.propertyId).subscribe({
-      next: (p) => this.propertyName.set(p.name),
+      next: (p) => {
+        this.propertyName.set(p.name);
+        this.propertyActive.set(p.isActive !== false);
+      },
       error: () => {}
     });
   }
@@ -152,21 +174,51 @@ export class CalendarComponent implements OnInit {
     return cells;
   }
 
-  private deriveStatus(room: RoomCalendar, data?: DayInventory): MonthCell['status'] {
+  private deriveStatus(room: RoomCalendar, data?: DayInventory): CellStatus {
     if (!data || !data.hasInventory) return 'unmanaged';
-    if (data.availableCount === 0 && data.bookedCount === 0) return 'blocked';
-    if (data.bookedCount >= room.quantity || data.availableCount === 0) return 'full';
+
+    // FIX #5: ưu tiên check available=0 trước. Nếu host đã khoá ngày
+    // (available=0) thì giữ status 'blocked' bất kể có booking cũ.
+    if (data.availableCount === 0) {
+      return data.bookedCount > 0 ? 'blocked-with-booking' : 'blocked';
+    }
+
+    // Đã đầy thực sự: available > 0 không thể đạt vì hết phòng
+    if (data.bookedCount >= room.quantity) return 'full';
+
+    // Có khách
     if (data.bookedCount > 0) return 'partial';
+
+    // FIX #1: phân biệt "mở hết" vs "host limit nhưng chưa có khách"
+    if (data.availableCount < room.quantity) return 'limited';
+
     return 'available';
   }
 
   // ============ Edit day modal ============
 
   openEditDay(room: RoomCalendar, cell: MonthCell): void {
-    if (!cell.inMonth || !cell.data) return;
+    if (!cell.inMonth) return;
+    // FIX #2: ngày chưa mở lịch → toast hint thay vì silent no-op
+    if (!cell.data || !cell.data.hasInventory) {
+      this.toast.info('Ngày này chưa có lịch. Bấm "Mở lịch đến..." để mở.');
+      return;
+    }
     this.editTarget.set({ room, day: cell.data });
     this.editAvailable = cell.data.availableCount;
     this.showEditDay.set(true);
+    // FIX #6: load bookings của ngày này để host xem ai đang giữ chỗ
+    this.dayBookings.set([]);
+    if (cell.data.bookedCount > 0) {
+      this.isLoadingDayBookings.set(true);
+      this.inventoryService.getBookingsForDay(this.propertyId, room.roomId, cell.data.date).subscribe({
+        next: (list) => {
+          this.dayBookings.set(list);
+          this.isLoadingDayBookings.set(false);
+        },
+        error: () => this.isLoadingDayBookings.set(false)
+      });
+    }
   }
 
   closeEditDay(): void {
@@ -212,6 +264,41 @@ export class CalendarComponent implements OnInit {
     const plus7 = this.toIso(this.addDays(new Date(), 6));
     this.bulkForm = { fromDate: today, toDate: plus7, availableCount: room.quantity };
     this.showBulkEdit.set(true);
+    this.recomputeBulkMax();
+  }
+
+  /**
+   * FIX #3: tính maxAvailable host được phép set cho range hiện tại.
+   * = quantity - max(bookedCount across days in range).
+   * Dùng dữ liệu calendar đã load để tránh round-trip API.
+   * Nếu range vượt khỏi calendar đang load (vd qua tháng khác), trả null
+   * để hiển thị fallback hint.
+   */
+  recomputeBulkMax(): void {
+    const room = this.bulkRoom();
+    if (!room || !this.bulkForm.fromDate || !this.bulkForm.toDate) {
+      this.bulkMaxAvailable.set(null);
+      return;
+    }
+    const from = this.bulkForm.fromDate;
+    const to = this.bulkForm.toDate;
+    if (from > to) {
+      this.bulkMaxAvailable.set(null);
+      return;
+    }
+    let maxBooked = 0;
+    let coveredAll = true;
+    for (let d = new Date(from); this.toIso(d) <= to; d = this.addDays(d, 1)) {
+      const iso = this.toIso(d);
+      const day = room.days.find(x => x.date === iso);
+      if (!day) { coveredAll = false; continue; }
+      if (day.bookedCount > maxBooked) maxBooked = day.bookedCount;
+    }
+    if (!coveredAll) {
+      this.bulkMaxAvailable.set(null);   // không đủ data, để BE validate
+      return;
+    }
+    this.bulkMaxAvailable.set(room.quantity - maxBooked);
   }
 
   closeBulkEdit(): void {
@@ -308,5 +395,54 @@ export class CalendarComponent implements OnInit {
   }
   private daysBetween(a: Date, b: Date): number {
     return Math.round((b.getTime() - a.getTime()) / 86400000);
+  }
+
+  // ============ Presentation helpers (label + today + tooltip) ============
+
+  private readonly statusLabels: Record<CellStatus, string> = {
+    available: 'Còn trống',
+    limited: 'Mở giới hạn',
+    partial: 'Có khách',
+    full: 'Đã đầy',
+    blocked: 'Đã khoá',
+    'blocked-with-booking': 'Khoá có khách',
+    unmanaged: 'Chưa mở',
+    empty: ''
+  };
+
+  /** Label tiếng Việt cho mỗi trạng thái cell. */
+  getStatusLabel(status: CellStatus): string {
+    return this.statusLabels[status] || '';
+  }
+
+  /** Cell có phải là ngày hôm nay không. */
+  isToday(cell: MonthCell): boolean {
+    if (!cell.inMonth || !cell.date) return false;
+    return cell.date === this.toIso(new Date());
+  }
+
+  /** Cell có phải thứ 7 hoặc CN không (theo index trong tuần VN). */
+  isWeekend(index: number): boolean {
+    const dow = index % 7;
+    return dow === 5 || dow === 6;   // T7 (5), CN (6)
+  }
+
+  /** DD/MM/YYYY từ ISO date. */
+  formatDateVi(iso: string): string {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  /** Tooltip chi tiết khi hover. */
+  buildCellTooltip(room: RoomCalendar, cell: MonthCell): string {
+    if (!cell.inMonth || !cell.date) return '';
+    const dateStr = this.formatDateVi(cell.date);
+    if (!cell.data || !cell.data.hasInventory) {
+      return `${dateStr} — chưa mở lịch. Bấm "Mở lịch đến..." để mở.`;
+    }
+    const label = this.getStatusLabel(cell.status);
+    const todayMarker = this.isToday(cell) ? ' (Hôm nay)' : '';
+    return `${dateStr}${todayMarker} — ${label}. ${cell.data.availableCount} phòng trống / ${room.quantity} phòng vật lý. ${cell.data.bookedCount} đơn đang giữ chỗ.`;
   }
 }

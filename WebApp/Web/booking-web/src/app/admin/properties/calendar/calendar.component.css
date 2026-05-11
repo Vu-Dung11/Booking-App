@@ -36,10 +36,30 @@
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .dot-available { background: #DCFCE7; border: 1px solid #86EFAC; }
+.dot-limited { background: #DBEAFE; border: 1px solid #93C5FD; }
 .dot-partial { background: #FEF3C7; border: 1px solid #FCD34D; }
 .dot-full { background: #FEE2E2; border: 1px solid #FCA5A5; }
 .dot-blocked { background: var(--color-primary-light); border: 1px solid var(--color-primary); }
+.dot-blocked-bk {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
+  background-image: repeating-linear-gradient(45deg, transparent 0 3px, rgba(124,92,252,0.4) 3px 4px);
+}
 .dot-unmanaged { background: var(--color-bg-tertiary); border: 1px solid var(--color-border); }
+
+/* ============ Banner (property inactive) ============ */
+.alert-banner {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; margin-bottom: 16px;
+  background: var(--color-warning-light); color: #92400E;
+  border-radius: var(--radius-md); border-left: 3px solid var(--color-warning);
+  box-shadow: var(--shadow-sm);
+}
+.alert-banner .banner-body { flex: 1; font-size: 13px; line-height: 1.5; }
+.alert-banner .banner-body strong { display: block; margin-bottom: 2px; }
+@media (max-width: 640px) {
+  .alert-banner { flex-direction: column; align-items: flex-start; }
+}
 
 /* ============ Rooms ============ */
 .rooms-stack { display: flex; flex-direction: column; gap: 20px; }
@@ -66,6 +86,7 @@
   font-size: 11px; font-weight: 600; color: var(--color-text-muted);
   text-transform: uppercase; letter-spacing: 0.05em; text-align: center;
 }
+.weekdays .weekend { color: var(--color-text); }
 
 .grid {
   display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
@@ -73,44 +94,93 @@
 }
 
 .cell {
-  aspect-ratio: 1 / 1.05;
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 6px; border-radius: 6px;
+  aspect-ratio: auto;
+  min-height: 72px;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 6px 8px; border-radius: 6px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
   font-size: 11px; line-height: 1.2;
   transition: transform 0.1s, box-shadow 0.1s;
-  min-height: 56px;
+  position: relative;
 }
-.cell-empty { border: none; background: transparent; }
+.cell-empty { border: none; background: transparent; min-height: 0; }
 
-.cell-day { font-size: 13px; font-weight: 600; color: var(--color-text); }
-.cell-counts { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); }
-.cell-counts.cell-muted { color: var(--color-text-muted); font-weight: 400; }
+.cell-row-day {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 4px;
+}
+.cell-day { font-size: 13px; font-weight: 600; color: var(--color-text); line-height: 1; }
+
+.cell-label {
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cell-counts {
+  font-size: 11px; font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: auto;
+}
 .cell-booked { font-size: 10px; color: var(--color-text-muted); }
 
 .cell.clickable { cursor: pointer; }
 .cell.clickable:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
+/* Today marker */
+.cell-today { border: 2px solid var(--color-primary); padding: 5px 7px; }
+.today-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--color-primary); flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(124, 92, 252, 0.2);
+}
+
+/* Weekend (T7, CN) — chỉ tô background nhẹ với cell available + empty,
+   không override các status có màu mạnh */
+.cell-weekend.cell-available { background: #D1FAE5; }
+.cell-empty.cell-weekend { background: var(--color-bg-tertiary); }
+
 /* Status colors */
 .cell-available { background: #DCFCE7; border-color: #86EFAC; }
-.cell-available .cell-day { color: #166534; }
-.cell-available .cell-counts { color: #166534; }
+.cell-available .cell-day,
+.cell-available .cell-counts,
+.cell-available .cell-label { color: #166534; }
+
+/* limited: host đã giảm available < quantity nhưng chưa có booking */
+.cell-limited { background: #DBEAFE; border-color: #93C5FD; }
+.cell-limited .cell-day,
+.cell-limited .cell-counts,
+.cell-limited .cell-label { color: #1E40AF; }
 
 .cell-partial { background: #FEF3C7; border-color: #FCD34D; }
-.cell-partial .cell-day { color: #92400E; }
-.cell-partial .cell-counts { color: #92400E; }
+.cell-partial .cell-day,
+.cell-partial .cell-counts,
+.cell-partial .cell-label { color: #92400E; }
 
 .cell-full { background: #FEE2E2; border-color: #FCA5A5; }
-.cell-full .cell-day { color: #991B1B; }
-.cell-full .cell-counts { color: #991B1B; }
+.cell-full .cell-day,
+.cell-full .cell-counts,
+.cell-full .cell-label { color: #991B1B; }
 
 .cell-blocked { background: var(--color-primary-light); border-color: var(--color-primary); }
-.cell-blocked .cell-day { color: var(--color-primary); }
-.cell-blocked .cell-counts { color: var(--color-primary); }
+.cell-blocked .cell-day,
+.cell-blocked .cell-counts,
+.cell-blocked .cell-label { color: var(--color-primary); }
+
+/* blocked-with-booking: host đã khoá nhưng booking cũ vẫn còn */
+.cell-blocked-bk {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(124,92,252,0.18) 5px 6px);
+}
+.cell-blocked-bk .cell-day,
+.cell-blocked-bk .cell-counts,
+.cell-blocked-bk .cell-label { color: var(--color-primary); }
 
 .cell-unmanaged { background: var(--color-bg-tertiary); border-color: var(--color-border); }
-.cell-unmanaged .cell-day { color: var(--color-text-muted); }
+.cell-unmanaged .cell-day,
+.cell-unmanaged .cell-label { color: var(--color-text-muted); }
 
 /* ============ States ============ */
 .loading-state, .empty-state {
@@ -195,15 +265,53 @@
   border-left: 3px solid var(--color-warning);
 }
 
+/* ============ Bookings drill-down inside Edit Day modal ============ */
+.bookings-section {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+.bookings-title {
+  font-size: 12px; font-weight: 600; color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.bookings-loading { font-size: 13px; color: var(--color-text-muted); padding: 8px 0; }
+.bookings-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.booking-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+}
+.booking-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.booking-id {
+  font-size: 13px; font-weight: 600; color: var(--color-primary);
+  text-decoration: none;
+}
+.booking-id:hover { text-decoration: underline; }
+.booking-guest { font-size: 13px; color: var(--color-text); }
+.booking-meta { font-size: 11px; color: var(--color-text-muted); }
+.booking-status {
+  flex-shrink: 0; font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: var(--radius-pill);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.booking-status-pending { background: var(--color-warning-light); color: var(--color-warning); }
+.booking-status-confirmed { background: var(--color-primary-light); color: var(--color-primary); }
+.booking-status-completed { background: var(--color-success-light); color: var(--color-success); }
+.booking-status-cancelled { background: var(--color-danger-light); color: var(--color-danger); }
+
 /* ============ Responsive ============ */
 @media (max-width: 768px) {
   .room-header { flex-direction: column; align-items: stretch; }
   .room-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .room-actions .btn-primary, .room-actions .btn-secondary { justify-content: center; }
-  .cell { min-height: 48px; padding: 4px; }
+  .cell { min-height: 64px; padding: 5px 6px; }
+  .cell-today { padding: 4px 5px; }
   .cell-day { font-size: 12px; }
+  .cell-label { font-size: 9px; }
   .cell-counts { font-size: 10px; }
-  .cell-booked { font-size: 9px; }
+  .cell-booked { display: none; }   /* ẩn "N đặt" để gọn */
   .form-row { grid-template-columns: 1fr; }
   .modal-content { max-height: 100vh; height: 100%; max-width: none; border-radius: 0; }
   .modal-overlay { padding: 0; }
@@ -211,7 +319,7 @@
 
 @media (max-width: 480px) {
   .legend { padding: 8px 12px; gap: 10px; font-size: 11px; }
-  .cell { min-height: 40px; }
-  .cell-counts { display: none; }
-  .cell-booked { display: none; }
+  .cell { min-height: 56px; padding: 4px 5px; gap: 1px; }
+  .cell-today { padding: 3px 4px; }
+  .cell-counts { display: none; }   /* ẩn X/Y, vẫn còn label chữ */
 }

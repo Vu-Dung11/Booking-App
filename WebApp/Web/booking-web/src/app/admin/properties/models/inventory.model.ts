@@ -33,3 +33,13 @@ export interface ExtendInventoryResult {
   created: number;
   lastDate: string;
 }
+
+export interface BookingByDateItem {
+  id: number;
+  guestName: string | null;
+  guestPhone: string | null;
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | string;
+  roomQuantity: number;
+  checkInDate: string;
+  checkOutDate: string;
+}

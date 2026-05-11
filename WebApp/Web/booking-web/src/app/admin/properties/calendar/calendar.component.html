@@ -19,12 +19,29 @@
     </div>
   </div>
 
+  <!-- FIX #4: banner cảnh báo property đang ẩn -->
+  @if (!propertyActive()) {
+    <div class="alert-banner" appAnimateOnScroll>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 1.5L1 17H19L10 1.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M10 7V11M10 13.5H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="banner-body">
+        <strong>Homestay này đang ẩn.</strong>
+        Khách không thể đặt phòng dù lịch còn trống. Hãy hiển thị lại trong trang chi tiết homestay.
+      </div>
+      <a [routerLink]="['/host/properties', propertyId]" class="btn-secondary btn-sm">Tới chi tiết</a>
+    </div>
+  }
+
   <!-- Legend -->
   <div class="legend" appAnimateOnScroll>
     <span class="legend-item"><span class="dot dot-available"></span> Còn trống</span>
+    <span class="legend-item"><span class="dot dot-limited"></span> Mở giới hạn</span>
     <span class="legend-item"><span class="dot dot-partial"></span> Có khách</span>
     <span class="legend-item"><span class="dot dot-full"></span> Đã đầy</span>
     <span class="legend-item"><span class="dot dot-blocked"></span> Đã khoá</span>
+    <span class="legend-item"><span class="dot dot-blocked-bk"></span> Khoá có khách</span>
     <span class="legend-item"><span class="dot dot-unmanaged"></span> Chưa mở lịch</span>
   </div>
 
@@ -58,30 +75,41 @@
 
           <!-- Weekday header -->
           <div class="weekdays">
-            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span class="weekend">T7</span><span class="weekend">CN</span>
           </div>
 
           <!-- Grid -->
           <div class="grid">
-            @for (cell of buildMonthGrid(room); track cell.date + '-' + cell.day) {
+            @for (cell of buildMonthGrid(room); track $index; let i = $index) {
               <div class="cell"
                    [class.cell-empty]="!cell.inMonth"
                    [class.cell-unmanaged]="cell.status === 'unmanaged'"
                    [class.cell-blocked]="cell.status === 'blocked'"
+                   [class.cell-blocked-bk]="cell.status === 'blocked-with-booking'"
                    [class.cell-full]="cell.status === 'full'"
                    [class.cell-partial]="cell.status === 'partial'"
+                   [class.cell-limited]="cell.status === 'limited'"
                    [class.cell-available]="cell.status === 'available'"
-                   [class.clickable]="cell.inMonth && cell.inRange"
+                   [class.cell-weekend]="isWeekend(i) && cell.inMonth"
+                   [class.cell-today]="isToday(cell)"
+                   [class.clickable]="cell.inMonth"
+                   [attr.title]="buildCellTooltip(room, cell)"
                    (click)="openEditDay(room, cell)">
                 @if (cell.inMonth) {
-                  <span class="cell-day">{{ cell.day }}</span>
+                  <div class="cell-row cell-row-day">
+                    <span class="cell-day">{{ cell.day }}</span>
+                    @if (isToday(cell)) {
+                      <span class="today-dot" aria-label="Hôm nay"></span>
+                    }
+                  </div>
+                  @if (cell.inRange) {
+                    <span class="cell-label">{{ getStatusLabel(cell.status) }}</span>
+                  }
                   @if (cell.data && cell.data.hasInventory) {
                     <span class="cell-counts">{{ cell.data.availableCount }}/{{ room.quantity }}</span>
                     @if (cell.data.bookedCount > 0) {
                       <span class="cell-booked">{{ cell.data.bookedCount }} đặt</span>
                     }
-                  } @else if (cell.inRange) {
-                    <span class="cell-counts cell-muted">—</span>
                   }
                 }
               </div>
@@ -118,6 +146,31 @@
             <button type="button" class="btn-secondary btn-sm" (click)="setEditPreset('open')">Mở hết</button>
             <button type="button" class="btn-secondary btn-sm" (click)="setEditPreset('block')">Khoá ngày</button>
           </div>
+
+          <!-- FIX #6: drill-down bookings của ngày này -->
+          @if (editTarget()!.day.bookedCount > 0) {
+            <div class="bookings-section">
+              <div class="bookings-title">Đơn đặt phòng ngày này</div>
+              @if (isLoadingDayBookings()) {
+                <div class="bookings-loading">Đang tải...</div>
+              } @else if (dayBookings().length === 0) {
+                <div class="bookings-loading">Không lấy được danh sách.</div>
+              } @else {
+                <ul class="bookings-list">
+                  @for (b of dayBookings(); track b.id) {
+                    <li class="booking-row">
+                      <div class="booking-main">
+                        <a class="booking-id" [routerLink]="['/host/bookings', b.id]" (click)="closeEditDay()">#{{ b.id }}</a>
+                        <span class="booking-guest">{{ b.guestName || 'Ẩn danh' }}</span>
+                        <span class="booking-meta">{{ b.roomQuantity }} phòng &middot; {{ b.checkInDate }} → {{ b.checkOutDate }}</span>
+                      </div>
+                      <span class="booking-status booking-status-{{ b.status.toLowerCase() }}">{{ b.status }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" (click)="closeEditDay()">Đóng</button>
@@ -142,24 +195,34 @@
           <div class="form-row">
             <div class="form-group">
               <label>Từ ngày</label>
-              <input type="date" [(ngModel)]="bulkForm.fromDate" />
+              <input type="date" [(ngModel)]="bulkForm.fromDate" (ngModelChange)="recomputeBulkMax()" />
             </div>
             <div class="form-group">
               <label>Đến ngày</label>
-              <input type="date" [(ngModel)]="bulkForm.toDate" />
+              <input type="date" [(ngModel)]="bulkForm.toDate" (ngModelChange)="recomputeBulkMax()" />
             </div>
           </div>
           <div class="form-group">
             <label>Số phòng trống mỗi ngày</label>
-            <input type="number" [(ngModel)]="bulkForm.availableCount" [min]="0" [max]="bulkRoom()!.quantity" />
+            <input type="number"
+                   [(ngModel)]="bulkForm.availableCount"
+                   [min]="0"
+                   [max]="bulkMaxAvailable() ?? bulkRoom()!.quantity" />
           </div>
           <div class="preset-row">
             <button type="button" class="btn-secondary btn-sm" (click)="setBulkPreset('open')">Mở hết</button>
             <button type="button" class="btn-secondary btn-sm" (click)="setBulkPreset('block')">Khoá khoảng</button>
           </div>
-          <p class="muted small">
-            Nếu trong khoảng có ngày đã có booking vượt số bạn nhập, hệ thống sẽ từ chối toàn bộ và không thay đổi gì.
-          </p>
+          <!-- FIX #3: hint maxAvailable preflight -->
+          @if (bulkMaxAvailable() !== null && bulkMaxAvailable()! < bulkRoom()!.quantity) {
+            <div class="info-box">
+              Trong khoảng đã chọn có ngày có booking. Số phòng trống tối đa bạn được phép set là <strong>{{ bulkMaxAvailable() }}</strong> (= {{ bulkRoom()!.quantity }} − số booking nhiều nhất trong 1 ngày).
+            </div>
+          } @else {
+            <p class="muted small">
+              Nếu trong khoảng có ngày đã có booking vượt số bạn nhập, hệ thống sẽ từ chối toàn bộ và không thay đổi gì.
+            </p>
+          }
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" (click)="closeBulkEdit()">Đóng</button>

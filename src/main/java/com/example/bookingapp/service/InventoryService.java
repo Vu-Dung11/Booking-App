@@ -4,6 +4,7 @@ package com.example.bookingapp.service;
 import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.configuration.utils.SecurityUtils;
+import com.example.bookingapp.dto.BookingByDateItem;
 import com.example.bookingapp.dto.HostCalendarResponse;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Property;
@@ -328,4 +329,32 @@ public class InventoryService {
     }
 
     public record ExtendResult(int created, LocalDate lastDate) {}
+
+    /**
+     * Lấy các booking đang giữ chỗ ở 1 ngày cụ thể của 1 room.
+     * Dùng để drill-down từ cell calendar.
+     */
+    @Transactional(readOnly = true)
+    public List<BookingByDateItem> getBookingsForRoomOnDate(Long propertyId, Long roomId, LocalDate date) {
+        if (date == null) {
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
+        }
+        requireOwnedRoom(propertyId, roomId);
+        List<Booking> overlapping = bookingRepository.findActiveOverlapping(
+                roomId, date, date.plusDays(1));
+        List<BookingByDateItem> result = new ArrayList<>();
+        for (Booking b : overlapping) {
+            User guest = b.getGuest();
+            result.add(BookingByDateItem.builder()
+                    .id(b.getId())
+                    .guestName(guest != null ? guest.getFullName() : null)
+                    .guestPhone(guest != null ? guest.getPhoneNumber() : null)
+                    .status(b.getStatus().name())
+                    .roomQuantity(b.getRoomQuantity())
+                    .checkInDate(b.getCheckInDate())
+                    .checkOutDate(b.getCheckOutDate())
+                    .build());
+        }
+        return result;
+    }
 }

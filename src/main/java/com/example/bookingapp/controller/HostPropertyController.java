@@ -3,6 +3,7 @@ package com.example.bookingapp.controller;
 import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.configuration.exception.AppException;
 import com.example.bookingapp.dto.ApiResponse;
+import com.example.bookingapp.dto.BookingByDateItem;
 import com.example.bookingapp.dto.HostCalendarResponse;
 import com.example.bookingapp.dto.PropertyDetailResponse;
 import com.example.bookingapp.entity.Property;
@@ -228,6 +229,15 @@ public class HostPropertyController {
         data.put("created", res.created());
         data.put("lastDate", res.lastDate());
         return ApiResponse.success(data);
+    }
+
+    /** Drill-down: list bookings đang giữ chỗ ngày `date` cho room `rid`. */
+    @GetMapping("/{pid}/rooms/{rid}/bookings/by-date")
+    public ApiResponse<List<BookingByDateItem>> getBookingsByDate(
+            @PathVariable Long pid,
+            @PathVariable Long rid,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ApiResponse.success(inventoryService.getBookingsForRoomOnDate(pid, rid, date));
     }
 
     // ===================== mappers =====================

@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../../shared/models/api-response.model';
 import {
+  BookingByDateItem,
   DayInventory,
   DayInventoryUpdateRequest,
   ExtendInventoryRequest,
@@ -39,6 +40,15 @@ export class InventoryService {
     return this.http.post<ApiResponse<ExtendInventoryResult>>(
       `${this.apiUrl}/${propertyId}/rooms/${roomId}/inventory/extend`,
       body
+    ).pipe(map(res => res.data));
+  }
+
+  /** Drill-down: lấy list booking đang giữ chỗ ngày `date` của 1 room. */
+  getBookingsForDay(propertyId: number, roomId: number, date: string): Observable<BookingByDateItem[]> {
+    const params = new HttpParams().set('date', date);
+    return this.http.get<ApiResponse<BookingByDateItem[]>>(
+      `${this.apiUrl}/${propertyId}/rooms/${roomId}/bookings/by-date`,
+      { params }
     ).pipe(map(res => res.data));
   }
 }
