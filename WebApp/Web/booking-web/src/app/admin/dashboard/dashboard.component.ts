@@ -62,6 +62,18 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      'PENDING':   'Chờ thanh toán',
+      'CONFIRMED': 'Đã xác nhận',
+      'COMPLETED': 'Hoàn thành',
+      'CANCELLED': 'Đã huỷ',
+      'REFUNDED':  'Đã hoàn tiền',
+      'PAID':      'Đã thanh toán',
+    };
+    return map[status] ?? status;
+  }
+
   formatPrice(value: number): string {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
   }

@@ -1,6 +1,7 @@
 package com.example.bookingapp.presentation.features.home;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -55,7 +56,26 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.ViewHolder> {
         NumberFormat formatter = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
         holder.binding.tvRoomPrice.setText(formatter.format(room.getPrice()) + "đ");
 
-        holder.itemView.setOnClickListener(v -> listener.onRoomClick(room));
+        Integer available = room.getAvailableCount();
+        if (available != null) {
+            holder.binding.tvRoomAvailability.setVisibility(View.VISIBLE);
+            if (available > 0) {
+                holder.binding.tvRoomAvailability.setText("Còn " + available + " phòng");
+                holder.itemView.setAlpha(1f);
+                holder.itemView.setEnabled(true);
+                holder.itemView.setOnClickListener(v -> listener.onRoomClick(room));
+            } else {
+                holder.binding.tvRoomAvailability.setText("Hết phòng");
+                holder.itemView.setAlpha(0.5f);
+                holder.itemView.setEnabled(false);
+                holder.itemView.setOnClickListener(null);
+            }
+        } else {
+            holder.binding.tvRoomAvailability.setVisibility(View.GONE);
+            holder.itemView.setAlpha(1f);
+            holder.itemView.setEnabled(true);
+            holder.itemView.setOnClickListener(v -> listener.onRoomClick(room));
+        }
     }
 
     @Override

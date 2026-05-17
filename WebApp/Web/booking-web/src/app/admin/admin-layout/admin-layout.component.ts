@@ -22,11 +22,11 @@ export class AdminLayoutComponent implements OnInit {
   currentUser = this.authService.currentUser;
 
   navItems = [
-    { path: '/host/dashboard', label: 'Tong quan', icon: 'dashboard' },
-    { path: '/host/properties', label: 'Homestay cua toi', icon: 'property' },
-    { path: '/host/bookings', label: 'Dat phong', icon: 'booking' },
-    { path: '/host/payments', label: 'Thanh toan', icon: 'payment' },
-    { path: '/host/reviews', label: 'Danh gia', icon: 'review' },
+    { path: '/host/dashboard', label: 'Tổng quan', icon: 'dashboard' },
+    { path: '/host/properties', label: 'Homestay của tôi', icon: 'property' },
+    { path: '/host/bookings', label: 'Đặt phòng', icon: 'booking' },
+    { path: '/host/payments', label: 'Thanh toán', icon: 'payment' },
+    { path: '/host/reviews', label: 'Đánh giá', icon: 'review' },
   ];
 
   ngOnInit(): void {

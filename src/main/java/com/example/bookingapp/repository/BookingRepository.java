@@ -41,6 +41,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @org.springframework.data.repository.query.Param("endExclusive") LocalDate endExclusive
     );
 
+    // Booking của guest (current user)
+    Page<Booking> findByGuest_Id(Long guestId, Pageable pageable);
+    Page<Booking> findByGuest_IdAndStatus(Long guestId, Booking.BookingStatus status, Pageable pageable);
+
     // Booking thuộc các property của host hiện tại
     Page<Booking> findByRoom_Property_HostId(Long hostId, Pageable pageable);
     Page<Booking> findByRoom_Property_HostIdAndStatus(Long hostId, Booking.BookingStatus status, Pageable pageable);

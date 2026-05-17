@@ -1,33 +1,73 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
 
 :root {
+  /* Màu chính */
   --color-primary: #7C5CFC;
   --color-primary-hover: #6A4AE8;
-  --color-primary-light: #F0EBFF;
+  --color-primary-light: #EEE8FF;
+  --color-primary-dark: #5538D4;
+
+  /* Gradient */
+  --gradient-primary: linear-gradient(135deg, #7C5CFC 0%, #5538D4 100%);
+  --gradient-sidebar: linear-gradient(180deg, #1E1B4B 0%, #2D2A6E 60%, #312E81 100%);
+
+  /* Nền */
   --color-bg: #FFFFFF;
-  --color-bg-secondary: #F8F9FA;
-  --color-bg-tertiary: #F1F3F5;
-  --color-text: #1A1A2E;
-  --color-text-secondary: #495057;
-  --color-text-muted: #868E96;
-  --color-border: #E9ECEF;
-  --color-success: #12B76A;
-  --color-success-light: #ECFDF3;
+  --color-bg-secondary: #F4F6F9;
+  --color-bg-tertiary: #ECEEF2;
+  --color-surface: #FFFFFF;
+
+  /* Text */
+  --color-text: #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6B7280;
+  --color-text-placeholder: #9CA3AF;
+
+  /* Border */
+  --color-border: #E5E7EB;
+  --color-border-focus: #7C5CFC;
+
+  /* Trạng thái */
+  --color-success: #10B981;
+  --color-success-light: #ECFDF5;
+  --color-success-dark: #065F46;
   --color-warning: #F59E0B;
-  --color-warning-light: #FFF8E1;
-  --color-danger: #F04438;
-  --color-danger-light: #FEF3F2;
+  --color-warning-light: #FFFBEB;
+  --color-warning-dark: #92400E;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEF2F2;
+  --color-danger-dark: #991B1B;
+  --color-info: #3B82F6;
+  --color-info-light: #EFF6FF;
+
+  /* Radius */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-pill: 20px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.04);
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+
+  /* Shadow */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.06);
+  --shadow-xl: 0 20px 40px rgba(0,0,0,0.12);
+  --shadow-primary: 0 4px 14px rgba(124,92,252,0.35);
+
+  /* Layout */
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 72px;
   --header-height: 64px;
+
+  /* Transition */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Font */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -51,8 +91,8 @@ a { text-decoration: none; color: inherit; }
 /* Scroll animation */
 .animate-on-scroll {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(20px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .animate-on-scroll.visible {
   opacity: 1;
@@ -70,7 +110,7 @@ a { text-decoration: none; color: inherit; }
 .stagger-children .animate-on-scroll:nth-child(8) { transition-delay: 0.42s; }
 
 /* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }

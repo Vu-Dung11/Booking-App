@@ -1,28 +1,34 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Homestay cua toi</h1>
-      <p class="page-subtitle">Quan ly tat ca homestay ban dang phu trach</p>
+      <h1 class="page-title">Homestay của tôi</h1>
+      <p class="page-subtitle">Quản lý tất cả homestay bạn đang phụ trách</p>
     </div>
     <button class="btn-primary" (click)="openCreateModal()">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      Them homestay
+      Thêm homestay
     </button>
   </div>
 
   <div class="toolbar" appAnimateOnScroll>
-    <input
-      type="text"
-      class="search-input"
-      placeholder="Tim kiem theo ten, thanh pho..."
-      [(ngModel)]="searchTerm"
-    />
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Tìm kiếm theo tên, thành phố..."
+        [(ngModel)]="searchTerm"
+      />
+    </div>
   </div>
 
   @if (isLoading()) {
-    <div class="loading-state" appAnimateOnScroll>Dang tai du lieu...</div>
+    <div class="loading-state" appAnimateOnScroll>Đang tải dữ liệu...</div>
   } @else if (filteredProperties.length === 0) {
-    <div class="empty-state" appAnimateOnScroll>Ban chua co homestay nao. Bam "Them homestay" de tao moi.</div>
+    <div class="empty-state" appAnimateOnScroll>Bạn chưa có homestay nào. Nhấn "Thêm homestay" để tạo mới.</div>
   } @else {
     <div class="property-grid stagger-children">
       @for (property of filteredProperties; track property.id) {
@@ -32,35 +38,38 @@
               <img [src]="property.thumbnailUrl" [alt]="property.name" class="card-thumb" loading="lazy" />
             } @else {
               <div class="image-placeholder">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
               </div>
             }
             <span class="status-chip" [class.active]="property.isActive" [class.inactive]="!property.isActive">
-              {{ property.isActive ? 'Dang hien thi' : 'Da an' }}
+              {{ property.isActive ? 'Đang hiển thị' : 'Đã ẩn' }}
             </span>
           </div>
           <div class="card-body">
             <h3 class="card-title">{{ property.name }}</h3>
-            <p class="card-location">{{ property.city }}, {{ property.country }}</p>
+            <p class="card-location">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="margin-right:4px;vertical-align:-1px"><path d="M7 1C4.79 1 3 2.79 3 5c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4Z" stroke="currentColor" stroke-width="1.3"/></svg>
+              {{ property.city }}, {{ property.country }}
+            </p>
             <p class="card-address">{{ property.address }}</p>
           </div>
           <div class="card-footer">
-            <a [routerLink]="['/host/properties', property.id]" class="btn-link">Chi tiet</a>
+            <a [routerLink]="['/host/properties', property.id]" class="btn-link">Xem chi tiết →</a>
             <div class="card-actions">
-              <button class="btn-icon" title="Sua" (click)="openEditModal(property)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.5 2L14 4.5L5.5 13L2 14L3 10.5L11.5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              <button class="btn-icon" title="Chỉnh sửa" (click)="openEditModal(property)">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11.5 2L14 4.5L5.5 13L2 14L3 10.5L11.5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
               </button>
               <button class="btn-icon"
-                      [title]="property.isActive ? 'An khoi tim kiem cong khai' : 'Hien thi tro lai'"
+                      [title]="property.isActive ? 'Ẩn khỏi tìm kiếm công khai' : 'Hiển thị trở lại'"
                       (click)="toggleActive(property)">
                 @if (property.isActive) {
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 } @else {
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8C3 5 5.5 3 8 3C10.5 3 13 5 14 8C13 11 10.5 13 8 13C5.5 13 3 11 2 8Z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
                 }
               </button>
-              <button class="btn-icon btn-danger" title="Xoa vinh vien" (click)="openDeleteModal(property)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="btn-icon btn-danger" title="Xoá vĩnh viễn" (click)="openDeleteModal(property)">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4H13M6 4V2.5C6 2.22 6.22 2 6.5 2H9.5C9.78 2 10 2.22 10 2.5V4M4.5 4L5 13C5 13.55 5.45 14 6 14H10C10.55 14 11 13.55 11 13L11.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
           </div>
@@ -69,13 +78,13 @@
     </div>
 
     <div class="pagination-bar" appAnimateOnScroll>
-      <span class="page-info">{{ totalElements() }} homestays</span>
+      <span class="page-info">{{ totalElements() }} homestay</span>
       <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&lt;</button>
+        <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&#60;</button>
         @for (p of pages; track p) {
           <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
         }
-        <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&gt;</button>
+        <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&#62;</button>
       </div>
     </div>
   }
@@ -85,42 +94,42 @@
     <div class="modal-overlay" (click)="closeFormModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>{{ modalMode() === 'edit' ? 'Sua thong tin homestay' : 'Them homestay moi' }}</h2>
+          <h2>{{ modalMode() === 'edit' ? 'Sửa thông tin homestay' : 'Thêm homestay mới' }}</h2>
           <button class="btn-close" (click)="closeFormModal()">&times;</button>
         </div>
         <form (ngSubmit)="submitForm()" class="modal-form">
           <div class="form-group">
-            <label>Ten homestay *</label>
+            <label>Tên homestay <span class="required">*</span></label>
             <input type="text" [(ngModel)]="formData.name" name="name" placeholder="VD: Cozy Mountain Cabin" />
           </div>
           <div class="form-group">
-            <label>Mo ta</label>
-            <textarea [(ngModel)]="formData.description" name="description" rows="3" placeholder="Mo ta ve homestay..."></textarea>
+            <label>Mô tả</label>
+            <textarea [(ngModel)]="formData.description" name="description" rows="3" placeholder="Mô tả về homestay..."></textarea>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Dia chi *</label>
-              <input type="text" [(ngModel)]="formData.address" name="address" placeholder="123 Duong ABC" />
+              <label>Địa chỉ <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="formData.address" name="address" placeholder="123 Đường ABC" />
             </div>
             <div class="form-group">
-              <label>Thanh pho *</label>
-              <input type="text" [(ngModel)]="formData.city" name="city" placeholder="Da Nang" />
+              <label>Thành phố <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="formData.city" name="city" placeholder="Đà Nẵng" />
             </div>
           </div>
           <div class="form-group">
-            <label>Quoc gia</label>
+            <label>Quốc gia</label>
             <input type="text" [(ngModel)]="formData.country" name="country" />
           </div>
           @if (errorMessage()) {
             <div class="form-error">{{ errorMessage() }}</div>
           }
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="closeFormModal()">Huy</button>
+            <button type="button" class="btn-secondary" (click)="closeFormModal()">Huỷ</button>
             <button type="submit" class="btn-primary" [disabled]="isSaving()">
               @if (isSaving()) {
-                {{ modalMode() === 'edit' ? 'Dang luu...' : 'Dang tao...' }}
+                {{ modalMode() === 'edit' ? 'Đang lưu...' : 'Đang tạo...' }}
               } @else {
-                {{ modalMode() === 'edit' ? 'Luu thay doi' : 'Tao homestay' }}
+                {{ modalMode() === 'edit' ? 'Lưu thay đổi' : 'Tạo homestay' }}
               }
             </button>
           </div>
@@ -134,20 +143,20 @@
     <div class="modal-overlay" (click)="closeDeleteModal()">
       <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Xoa vinh vien homestay?</h2>
+          <h2>Xoá vĩnh viễn homestay?</h2>
           <button class="btn-close" (click)="closeDeleteModal()">&times;</button>
         </div>
         <div class="modal-body">
-          <p>Ban sap xoa <strong>{{ deletingProperty()!.name }}</strong>. Hanh dong nay <strong>khong the hoan tac</strong>.</p>
-          <p class="text-muted">Neu homestay van con booking hoac danh gia, ban nen <strong>"An homestay"</strong> thay vi xoa de giu lai du lieu lich su.</p>
+          <p>Bạn sắp xoá <strong>{{ deletingProperty()!.name }}</strong>. Hành động này <strong>không thể hoàn tác</strong>.</p>
+          <p class="text-muted">Nếu homestay vẫn còn đặt phòng hoặc đánh giá, bạn nên <strong>"Ẩn homestay"</strong> thay vì xoá để giữ lại dữ liệu lịch sử.</p>
           @if (errorMessage()) {
             <div class="form-error">{{ errorMessage() }}</div>
           }
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Huy</button>
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Huỷ</button>
           <button type="button" class="btn-danger" [disabled]="isDeleting()" (click)="confirmHardDelete()">
-            @if (isDeleting()) { Dang xoa... } @else { Xoa vinh vien }
+            @if (isDeleting()) { Đang xoá... } @else { Xoá vĩnh viễn }
           </button>
         </div>
       </div>

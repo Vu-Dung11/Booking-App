@@ -32,6 +32,15 @@
         <activity
             android:name=".presentation.features.views.PropertyDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.features.booking.BookingDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.features.booking.BookingCreateActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.features.payment.PaymentActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

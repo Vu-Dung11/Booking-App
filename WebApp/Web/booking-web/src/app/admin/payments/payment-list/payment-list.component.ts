@@ -67,11 +67,13 @@ export class PaymentListComponent implements OnInit {
   }
 
   getPaymentLabel(status: string): string {
-    switch (status) {
-      case 'CONFIRMED': return 'Da thanh toan';
-      case 'COMPLETED': return 'Hoan thanh';
-      default: return status;
-    }
+    const map: Record<string, string> = {
+      'CONFIRMED': 'Đã thanh toán',
+      'COMPLETED': 'Hoàn thành',
+      'CANCELLED': 'Đã huỷ',
+      'REFUNDED':  'Đã hoàn tiền',
+    };
+    return map[status] ?? status;
   }
 
   formatPrice(price: number): string {

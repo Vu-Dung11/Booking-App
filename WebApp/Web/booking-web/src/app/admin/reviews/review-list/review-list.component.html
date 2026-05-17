@@ -1,20 +1,20 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Danh gia</h1>
-      <p class="page-subtitle">Phan hoi tu khach da o cac homestay cua ban</p>
+      <h1 class="page-title">Đánh giá</h1>
+      <p class="page-subtitle">Phản hồi từ khách đã ở tại các homestay của bạn</p>
     </div>
   </div>
 
   <div class="card" appAnimateOnScroll>
     <div class="card-toolbar">
-      <span class="total-label">{{ totalElements() }} danh gia</span>
+      <span class="total-label">{{ totalElements() }} đánh giá</span>
     </div>
 
     @if (isLoading()) {
-      <div class="loading-state">Dang tai du lieu...</div>
+      <div class="loading-state">Đang tải dữ liệu...</div>
     } @else if (reviews().length === 0) {
-      <div class="empty-state">Chua co danh gia nao.</div>
+      <div class="empty-state">Chưa có đánh giá nào.</div>
     } @else {
       <div class="reviews-list stagger-children">
         @for (review of reviews(); track review.id) {
@@ -23,7 +23,7 @@
               <div class="review-meta">
                 <div class="avatar-sm">{{ (review.guestName || '?').charAt(0) }}</div>
                 <div>
-                  <div class="guest-name">{{ review.guestName || 'An danh' }}</div>
+                  <div class="guest-name">{{ review.guestName || 'Ẩn danh' }}</div>
                   <div class="property-name">{{ review.propertyName }}</div>
                 </div>
               </div>
@@ -38,7 +38,7 @@
               <p class="review-comment">{{ review.comment }}</p>
             }
             <div class="review-footer">
-              <span class="text-muted">Booking #{{ review.bookingId }}</span>
+              <span class="text-muted">Đơn #{{ review.bookingId }}</span>
               <span class="text-muted">{{ formatDate(review.createdAt) }}</span>
             </div>
           </div>
@@ -48,11 +48,11 @@
       <div class="table-footer">
         <span class="footer-info">Trang {{ currentPage() + 1 }} / {{ totalPages() }}</span>
         <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&lt;</button>
+          <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&#60;</button>
           @for (p of pages; track p) {
             <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
           }
-          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&gt;</button>
+          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&#62;</button>
         </div>
       </div>
     }

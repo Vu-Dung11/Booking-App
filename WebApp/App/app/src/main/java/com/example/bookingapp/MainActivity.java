@@ -1,5 +1,6 @@
 package com.example.bookingapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +14,12 @@ import com.example.bookingapp.presentation.features.home.HomeFragment;
 import com.example.bookingapp.presentation.features.profile.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String EXTRA_OPEN_TAB = "extra_open_tab";
+    public static final String TAB_HOME = "home";
+    public static final String TAB_FAVORITE = "favorite";
+    public static final String TAB_BOOKING = "booking";
+    public static final String TAB_PROFILE = "profile";
 
     private ActivityMainBinding binding;
     private final FragmentManager fragmentManager = getSupportFragmentManager();
@@ -33,6 +40,35 @@ public class MainActivity extends AppCompatActivity {
 
         setupFragments();
         setupBottomNavigation();
+        handleOpenTab(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleOpenTab(intent);
+    }
+
+    private void handleOpenTab(Intent intent) {
+        if (intent == null) return;
+        String tab = intent.getStringExtra(EXTRA_OPEN_TAB);
+        if (tab == null) return;
+        switch (tab) {
+            case TAB_BOOKING:
+                binding.bottomNavigation.setSelectedItemId(R.id.nav_booking);
+                break;
+            case TAB_FAVORITE:
+                binding.bottomNavigation.setSelectedItemId(R.id.nav_favorite);
+                break;
+            case TAB_PROFILE:
+                binding.bottomNavigation.setSelectedItemId(R.id.nav_profile);
+                break;
+            case TAB_HOME:
+            default:
+                binding.bottomNavigation.setSelectedItemId(R.id.nav_home);
+                break;
+        }
     }
 
     private void setupFragments() {

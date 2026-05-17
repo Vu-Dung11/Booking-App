@@ -12,9 +12,11 @@ import com.example.bookingapp.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -59,7 +61,15 @@ public class PropertyController {
     }
 
     @GetMapping("/{id}/detail")
-    public ApiResponse<PropertyDetailResponse> getPropertyDetail(@PathVariable Long id) {
+    public ApiResponse<PropertyDetailResponse> getPropertyDetail(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
+            @RequestParam(required = false) Integer guests) {
+        if (checkIn != null || checkOut != null) {
+            return ApiResponse.success(
+                    propertyService.getPropertyDetailWithAvailability(id, checkIn, checkOut, guests));
+        }
         return ApiResponse.success(propertyService.getPropertyDetail(id));
     }
 

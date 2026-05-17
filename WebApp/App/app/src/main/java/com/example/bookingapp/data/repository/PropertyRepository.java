@@ -42,12 +42,17 @@ public class PropertyRepository {
     }
 
     public void getPropertyDetail(Long id, MutableLiveData<Resource<PropertyDetailResponse>> state) {
+        getPropertyDetail(id, null, null, null, state);
+    }
+
+    public void getPropertyDetail(Long id, String checkIn, String checkOut, Integer guests,
+                                  MutableLiveData<Resource<PropertyDetailResponse>> state) {
         state.setValue(Resource.loading());
-        apiService.getPropertyDetail(id).enqueue(new Callback<ApiResponse<PropertyDetailResponse>>() {
+        apiService.getPropertyDetail(id, checkIn, checkOut, guests).enqueue(new Callback<ApiResponse<PropertyDetailResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<PropertyDetailResponse>> call,
                                    Response<ApiResponse<PropertyDetailResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                   if (response.isSuccessful() && response.body() != null) {
                     state.setValue(Resource.success(response.body().getData()));
                 } else {
                     state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));

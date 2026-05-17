@@ -26,4 +26,8 @@ public class PropertyDetailViewModel extends ViewModel {
     public void loadDetail(Long id) {
         repository.getPropertyDetail(id, detailState);
     }
+
+    public void loadDetail(Long id, String checkIn, String checkOut, Integer guests) {
+        repository.getPropertyDetail(id, checkIn, checkOut, guests, detailState);
+    }
 }

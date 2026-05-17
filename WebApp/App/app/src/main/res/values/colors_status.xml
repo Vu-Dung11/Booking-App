@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Booking status pills -->
+    <color name="status_pending_bg">#FFF8E1</color>
+    <color name="status_pending_text">#F59E0B</color>
+
+    <color name="status_confirmed_bg">#ECFDF3</color>
+    <color name="status_confirmed_text">#12B76A</color>
+
+    <color name="status_cancelled_bg">#FEF3F2</color>
+    <color name="status_cancelled_text">#F04438</color>
+
+    <color name="status_completed_bg">#F0EBFF</color>
+    <color name="status_completed_text">#7C5CFC</color>
+</resources>

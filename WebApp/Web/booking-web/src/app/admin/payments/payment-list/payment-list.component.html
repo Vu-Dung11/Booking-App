@@ -1,36 +1,36 @@
 <div class="page">
   <div class="page-header" appAnimateOnScroll>
     <div>
-      <h1 class="page-title">Thanh toan</h1>
-      <p class="page-subtitle">Doanh thu tu cac don dat phong da xac nhan / hoan thanh</p>
+      <h1 class="page-title">Thanh toán</h1>
+      <p class="page-subtitle">Doanh thu từ các đơn đặt phòng đã xác nhận / hoàn thành</p>
     </div>
   </div>
 
   <div class="card" appAnimateOnScroll>
     <div class="card-toolbar">
-      <span class="total-label">{{ totalElements() }} giao dich</span>
+      <span class="total-label">{{ totalElements() }} giao dịch</span>
       <select class="filter-select" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
-        <option value="ALL">Da thanh toan</option>
-        <option value="CONFIRMED">Da xac nhan</option>
-        <option value="COMPLETED">Hoan thanh</option>
+        <option value="ALL">Tất cả</option>
+        <option value="CONFIRMED">Đã xác nhận</option>
+        <option value="COMPLETED">Hoàn thành</option>
       </select>
     </div>
 
     @if (isLoading()) {
-      <div class="loading-state">Dang tai du lieu...</div>
+      <div class="loading-state">Đang tải dữ liệu...</div>
     } @else if (bookings().length === 0) {
-      <div class="empty-state">Chua co giao dich thanh toan nao.</div>
+      <div class="empty-state">Chưa có giao dịch thanh toán nào.</div>
     } @else {
       <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Booking ID</th>
-              <th>Khach hang</th>
+              <th>Mã đặt phòng</th>
+              <th>Khách hàng</th>
               <th>Homestay</th>
-              <th>So tien</th>
-              <th>Ngay dat</th>
-              <th>Trang thai</th>
+              <th>Số tiền</th>
+              <th>Ngày đặt</th>
+              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -58,11 +58,11 @@
       <div class="table-footer">
         <span class="footer-info">Trang {{ currentPage() + 1 }} / {{ totalPages() }}</span>
         <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&lt;</button>
+          <button class="page-btn" [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)">&#60;</button>
           @for (p of pages; track p) {
             <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
           }
-          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&gt;</button>
+          <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)">&#62;</button>
         </div>
       </div>
     }

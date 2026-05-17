@@ -7,6 +7,10 @@ public class RoomResponse {
     private String roomType;
     private BigDecimal price;
     private Integer capacity;
+    private Integer quantity;
+    private String thumbnailUrl;
+    /** Số phòng còn trống tối thiểu trong khoảng [checkIn, checkOut); null nếu endpoint không truyền date. */
+    private Integer availableCount;
 
 
     public Long getRoomId() {
@@ -23,5 +27,17 @@ public class RoomResponse {
 
     public Integer getCapacity() {
         return capacity;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public Integer getAvailableCount() {
+        return availableCount;
     }
 }

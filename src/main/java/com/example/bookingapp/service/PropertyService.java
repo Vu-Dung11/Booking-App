@@ -27,6 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,6 +119,84 @@ public class PropertyService {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
         return buildDetail(property);
+    }
+
+    /**
+     * Detail có lọc phòng theo khoảng ngày + sức chứa.
+     *  - checkIn/checkOut bắt buộc đi cùng nhau; nếu null → fallback {@link #getPropertyDetail(Long)}.
+     *  - guests null/0 → không lọc theo capacity.
+     *  - Mỗi room trả về kèm {@code availableCount} = min(availableCount) qua các đêm.
+     *  - Lọc bỏ room có availableCount = 0.
+     */
+    @Transactional(readOnly = true)
+    public PropertyDetailResponse getPropertyDetailWithAvailability(
+            Long id, LocalDate checkIn, LocalDate checkOut, Integer guests) {
+
+        if (checkIn == null || checkOut == null) {
+            return getPropertyDetail(id);
+        }
+        if (!checkIn.isBefore(checkOut)) {
+            throw new AppException(ErrorCode.CHECK_OUT_MUST_BE_AFTER_CHECK_IN);
+        }
+        if (checkIn.isBefore(LocalDate.now())) {
+            throw new AppException(ErrorCode.INVALID_INPUT);
+        }
+
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
+
+        long nights = ChronoUnit.DAYS.between(checkIn, checkOut);
+        Optional<PropertyImage> propThumb = propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(id);
+        String propertyThumb = propThumb.map(PropertyImage::getImageUrl).orElse(null);
+
+        List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
+                .filter(r -> guests == null || guests <= 0 || r.getCapacity() >= guests)
+                .map(r -> toRoomSearchResponseWithAvailability(r, checkIn, checkOut, nights))
+                .filter(r -> r.getAvailableCount() != null && r.getAvailableCount() > 0)
+                .toList();
+
+        return PropertyDetailResponse.builder()
+                .propetyId(id)
+                .name(property.getName())
+                .description(property.getDescription())
+                .address(property.getAddress())
+                .city(property.getCity())
+                .country(property.getCountry())
+                .isActive(property.getIsActive())
+                .thumbnailUrl(propertyThumb)
+                .rooms(rooms)
+                .build();
+    }
+
+    /** Build room kèm minAvailable trong [checkIn, checkOut). */
+    private RoomSearchResponse toRoomSearchResponseWithAvailability(
+            Room r, LocalDate checkIn, LocalDate checkOut, long nights) {
+        // BETWEEN trong JPA là inclusive 2 đầu → dùng checkOut.minusDays(1) để bao đêm
+        // cuối cùng của booking (đêm checkOut-1 → sáng checkOut khách trả phòng).
+        List<com.example.bookingapp.entity.RoomInventory> invs = roomInventoryRepository
+                .findByRoomIdAndInventoryDateBetween(r.getId(), checkIn, checkOut.minusDays(1));
+
+        Integer minAvailable;
+        if (invs.size() < nights) {
+            // Có đêm chưa được host mở inventory → coi như hết phòng
+            minAvailable = 0;
+        } else {
+            minAvailable = invs.stream()
+                    .mapToInt(com.example.bookingapp.entity.RoomInventory::getAvailableCount)
+                    .min()
+                    .orElse(0);
+        }
+
+        Optional<RoomImage> thumb = roomImageRepository.findFirstByRoomIdAndIsThumbnailTrue(r.getId());
+        return RoomSearchResponse.builder()
+                .roomId(r.getId())
+                .roomType(r.getRoomType())
+                .price(r.getBasePrice())
+                .capacity(r.getCapacity())
+                .quantity(r.getQuantity())
+                .thumbnailUrl(thumb.map(RoomImage::getImageUrl).orElse(null))
+                .availableCount(minAvailable)
+                .build();
     }
 
     // ============================================================

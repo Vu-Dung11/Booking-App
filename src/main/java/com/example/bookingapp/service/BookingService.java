@@ -243,6 +243,56 @@ public class BookingService {
     }
 
     // ============================================================
+    // GUEST-SCOPED — current user chỉ xem booking của mình
+    // ============================================================
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Booking> getBookingsForCurrentGuest(
+            Booking.BookingStatus status, org.springframework.data.domain.Pageable pageable) {
+        Long guestId = securityUtils.getCurrentUser().getId();
+        if (status != null) {
+            return bookingRepository.findByGuest_IdAndStatus(guestId, status, pageable);
+        }
+        return bookingRepository.findByGuest_Id(guestId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Booking getBookingForCurrentGuest(Long bookingId) {
+        User current = securityUtils.getCurrentUser();
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        boolean isOwner = booking.getGuest().getId().equals(current.getId());
+        boolean isHost = booking.getRoom().getProperty().getHost().getId().equals(current.getId());
+        boolean isAdmin = current.getRole() != null && "ADMIN".equals(current.getRole().name());
+        if (!isOwner && !isHost && !isAdmin) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return booking;
+    }
+
+    /** Guest chủ động hủy đơn PENDING của chính mình. Hoàn lại inventory. */
+    @Transactional
+    public Booking cancelMyPendingBooking(Long bookingId) {
+        Long guestId = securityUtils.getCurrentUser().getId();
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        if (!booking.getGuest().getId().equals(guestId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        if (booking.getStatus() != Booking.BookingStatus.PENDING) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS_FOR_CANCEL);
+        }
+
+        // Hoàn lại inventory + chuyển sang CANCELLED (tận dụng pattern đã có)
+        self.cancelUnpaidBooking(bookingId);
+
+        return bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+    }
+
+    // ============================================================
     // HOST-SCOPED READ — host chỉ xem booking của property mình
     // ============================================================
 

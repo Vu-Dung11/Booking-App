@@ -14,4 +14,10 @@ public class RoomSearchResponse {
     private Integer capacity;
     private Integer quantity;
     private String thumbnailUrl;
+
+    /**
+     * Số phòng tối thiểu còn trống trong khoảng [checkIn, checkOut) mà client truyền.
+     * NULL khi endpoint không nhận date params (giữ behavior cũ).
+     */
+    private Integer availableCount;
 }
