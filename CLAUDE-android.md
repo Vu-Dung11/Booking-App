@@ -258,29 +258,6 @@ startActivity(i);
 
 ## Gotcha & lessons learned
 
-### 1. WebView + redirect callback (VNPay, OAuth, …)
-**KHÔNG** override `shouldOverrideUrlLoading` return `true` cho URL callback của
-3rd-party — WebView sẽ KHÔNG gọi backend, server-side handler không chạy, DB
-không update. Đúng cách:
-
-```java
-@Override
-public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-    return false;   // để WebView load thật → backend xử lý → response trả về
-}
-@Override
-public void onPageFinished(WebView view, String url) {
-    // parse query param sau khi backend đã handle
-    Uri uri = Uri.parse(url);
-    if (uri.getPath() != null && uri.getPath().contains("/api/v1/payments/vnpay-return")) {
-        String code = uri.getQueryParameter("vnp_ResponseCode");
-        // show UI dựa trên code
-    }
-}
-```
-
-Xem [PaymentActivity](WebApp/App/app/src/main/java/com/example/bookingapp/presentation/features/payment/PaymentActivity.java).
-
 ### 2. Emulator network
 - Backend Spring Boot `localhost:8080` ⇒ Android emulator gọi qua `10.0.2.2:8080`.
 - Hard-coded trong [RetrofitClient.java](WebApp/App/app/src/main/java/com/example/bookingapp/data/remote/RetrofitClient.java).
@@ -337,7 +314,7 @@ Ví dụ thêm feature "Notifications":
 
 ## Rule bắt buộc
 
-- **KHÔNG dùng Kotlin** — Java 11 thuần.
+- **KHÔNG dùng Kotlin** — Java thuần.
 - **KHÔNG tạo file test** trừ khi được yêu cầu.
 - **KHÔNG đổi BASE_URL** trong RetrofitClient mà không hỏi.
 - **KHÔNG sửa application.properties backend** từ task Android.

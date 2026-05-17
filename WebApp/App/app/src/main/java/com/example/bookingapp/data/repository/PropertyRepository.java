@@ -7,7 +7,10 @@ import com.example.bookingapp.data.model.ApiResponse;
 import com.example.bookingapp.data.model.PageResponse;
 import com.example.bookingapp.data.model.views.PropertyDetailResponse;
 import com.example.bookingapp.data.model.views.PropertyResponse;
+import com.example.bookingapp.data.model.views.PropertySearchResponse;
 import com.example.bookingapp.data.remote.ApiService;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,6 +64,47 @@ public class PropertyRepository {
 
             @Override
             public void onFailure(Call<ApiResponse<PropertyDetailResponse>> call, Throwable t) {
+                state.setValue(Resource.error(t.getLocalizedMessage(), null));
+            }
+        });
+    }
+
+    public void searchProperties(String city, String checkIn, String checkOut, Integer guests,
+                                 MutableLiveData<Resource<List<PropertySearchResponse>>> state) {
+        state.setValue(Resource.loading());
+        apiService.searchProperties(city, checkIn, checkOut, guests).enqueue(new Callback<ApiResponse<List<PropertySearchResponse>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<PropertySearchResponse>>> call,
+                                   Response<ApiResponse<List<PropertySearchResponse>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    state.setValue(Resource.success(response.body().getData()));
+                } else {
+                    state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<PropertySearchResponse>>> call, Throwable t) {
+                state.setValue(Resource.error(t.getLocalizedMessage(), null));
+            }
+        });
+    }
+
+    public void getCities(MutableLiveData<Resource<List<String>>> state) {
+        state.setValue(Resource.loading());
+        apiService.getCities().enqueue(new Callback<ApiResponse<List<String>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<String>>> call,
+                                   Response<ApiResponse<List<String>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    state.setValue(Resource.success(response.body().getData()));
+                } else {
+                    state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<String>>> call, Throwable t) {
                 state.setValue(Resource.error(t.getLocalizedMessage(), null));
             }
         });

@@ -9,6 +9,7 @@ public class PropertySearchResponse {
     private String address;
     private String city;
     private BigDecimal minPrice;
+    private String thumbnailUrl;
     private List<RoomResponse> availableRooms;
 
     public Long getPropertyId() { return propertyId; }
@@ -16,5 +17,6 @@ public class PropertySearchResponse {
     public String getAddress() { return address; }
     public String getCity() { return city; }
     public BigDecimal getMinPrice() { return minPrice; }
+    public String getThumbnailUrl() { return thumbnailUrl; }
     public List<RoomResponse> getAvailableRooms() { return availableRooms; }
 }

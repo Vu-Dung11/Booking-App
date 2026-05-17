@@ -3,6 +3,9 @@ package com.example.bookingapp.controller;
 import com.example.bookingapp.dto.ApiResponse;
 import com.example.bookingapp.dto.PropertyDetailResponse;
 import com.example.bookingapp.dto.PropertySearchResponse;
+import com.example.bookingapp.dto.ReviewResponse;
+import com.example.bookingapp.dto.ReviewSummaryResponse;
+import com.example.bookingapp.service.ReviewService;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Room;
 import com.example.bookingapp.form.PropertyRequest;
@@ -24,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PropertyController {
     private final PropertyService propertyService;
+    private final ReviewService reviewService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('HOST')")
@@ -45,6 +49,25 @@ public class PropertyController {
         // Dùng @ModelAttribute vì đây là request GET, các tham số nằm trên URL (query params)
         List<PropertySearchResponse> results = propertyService.searchProperties(request);
         return ApiResponse.success(results);
+    }
+
+    @GetMapping("/cities")
+    public ApiResponse<List<String>> getCities() {
+        return ApiResponse.success(propertyService.getDistinctCities());
+    }
+
+    @GetMapping("/{propertyId}/reviews")
+    public ApiResponse<Page<ReviewResponse>> getReviewsByProperty(
+            @PathVariable Long propertyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ApiResponse.success(reviewService.getReviewsByProperty(propertyId, pageable));
+    }
+
+    @GetMapping("/{propertyId}/reviews/summary")
+    public ApiResponse<ReviewSummaryResponse> getReviewSummary(@PathVariable Long propertyId) {
+        return ApiResponse.success(reviewService.getSummary(propertyId));
     }
 
     @GetMapping

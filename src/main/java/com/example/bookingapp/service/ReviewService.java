@@ -5,6 +5,7 @@ package com.example.bookingapp.service;
 
 import com.example.bookingapp.configuration.enm.ErrorCode;
 import com.example.bookingapp.dto.ReviewResponse;
+import com.example.bookingapp.dto.ReviewSummaryResponse;
 import com.example.bookingapp.entity.Booking;
 import com.example.bookingapp.entity.Property;
 import com.example.bookingapp.entity.Review;
@@ -62,6 +63,50 @@ public class ReviewService {
         log.info("Khách hàng {} vừa đánh giá {} sao cho Homestay: {}",
                 currentUser.getEmail(), request.getRating(), property.getName());
         return reviewRepository.save(review);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> getReviewsByProperty(Long propertyId, Pageable pageable) {
+        return reviewRepository.findByPropertyIdOrderByCreatedAtDesc(propertyId, pageable)
+                .map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewSummaryResponse getSummary(Long propertyId) {
+        java.util.List<Review> all = reviewRepository.findByPropertyId(propertyId);
+        java.util.Map<Integer, Long> dist = new java.util.HashMap<>();
+        for (int i = 1; i <= 5; i++) dist.put(i, 0L);
+        double sum = 0;
+        for (Review r : all) {
+            Integer rt = r.getRating();
+            if (rt == null) continue;
+            sum += rt;
+            dist.merge(rt, 1L, Long::sum);
+        }
+        double avg = all.isEmpty() ? 0.0 : sum / all.size();
+        return ReviewSummaryResponse.builder()
+                .averageRating(Math.round(avg * 10.0) / 10.0)
+                .totalCount(all.size())
+                .distribution(dist)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByBooking(Long bookingId) {
+        return reviewRepository.existsByBookingId(bookingId);
+    }
+
+    private ReviewResponse toResponse(Review r) {
+        return ReviewResponse.builder()
+                .id(r.getId())
+                .propertyId(r.getProperty().getId())
+                .propertyName(r.getProperty().getName())
+                .bookingId(r.getBooking().getId())
+                .guestName(r.getBooking().getGuest().getFullName())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .createdAt(r.getCreatedAt())
+                .build();
     }
 
     /** Trả về review của các property thuộc về host hiện tại, kèm thông tin khách + homestay. */

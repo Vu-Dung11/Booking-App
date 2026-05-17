@@ -8,6 +8,8 @@ import com.example.bookingapp.data.model.auth.RegisterRequest;
 import com.example.bookingapp.data.model.booking.Booking;
 import com.example.bookingapp.data.model.booking.BookingRequest;
 import com.example.bookingapp.data.model.review.ReviewRequest;
+import com.example.bookingapp.data.model.review.ReviewResponse;
+import com.example.bookingapp.data.model.review.ReviewSummaryResponse;
 import com.example.bookingapp.data.model.user.UserResponse;
 import com.example.bookingapp.data.model.views.PropertyDetailResponse;
 import com.example.bookingapp.data.model.views.PropertyResponse;
@@ -47,6 +49,9 @@ public interface ApiService {
 
     @GET("api/v1/properties/{id}")
     Call<ApiResponse<Object>> getPropertyById(@Path("id") Long id);
+
+    @GET("api/v1/properties/cities")
+    Call<ApiResponse<List<String>>> getCities();
 
     @GET("api/v1/properties/search")
     Call<ApiResponse<List<PropertySearchResponse>>> searchProperties(
@@ -91,4 +96,17 @@ public interface ApiService {
     // ===== Reviews =====
     @POST("api/v1/reviews")
     Call<ApiResponse<String>> createReview(@Body ReviewRequest request);
+
+    @GET("api/v1/properties/{id}/reviews")
+    Call<ApiResponse<PageResponse<ReviewResponse>>> getReviewsByProperty(
+            @Path("id") Long id,
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    @GET("api/v1/properties/{id}/reviews/summary")
+    Call<ApiResponse<ReviewSummaryResponse>> getReviewSummary(@Path("id") Long id);
+
+    @GET("api/v1/reviews/check")
+    Call<ApiResponse<Boolean>> checkReviewExists(@Query("bookingId") Long bookingId);
 }

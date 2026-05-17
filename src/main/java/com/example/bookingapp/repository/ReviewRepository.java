@@ -12,6 +12,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByProperty_HostId(Long hostId, Pageable pageable);
     long countByProperty_HostId(Long hostId);
 
+    Page<Review> findByPropertyIdOrderByCreatedAtDesc(Long propertyId, Pageable pageable);
+
+    java.util.List<Review> findByPropertyId(Long propertyId);
+
     @org.springframework.data.jpa.repository.Query(
         "SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.property.host.id = :hostId"
     )

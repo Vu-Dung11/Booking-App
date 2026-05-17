@@ -16,6 +16,7 @@ public class PropertySearchResponse {
     private String address;
     private String city;
     private BigDecimal minPrice; // Giá thấp nhất của homestay đó
+    private String thumbnailUrl;
     private List<RoomSearchResponse> availableRooms;
 }
 

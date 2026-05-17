@@ -12,9 +12,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bookingapp.R;
 import com.example.bookingapp.core.utils.Formatter;
+import com.example.bookingapp.core.utils.Resource;
 import com.example.bookingapp.data.model.booking.Booking;
 import com.example.bookingapp.databinding.ActivityBookingDetailBinding;
 import com.example.bookingapp.presentation.features.payment.PaymentActivity;
+import com.example.bookingapp.presentation.features.review.ReviewCreateActivity;
+import com.example.bookingapp.presentation.features.review.ReviewCreateViewModel;
+import com.example.bookingapp.presentation.features.review.ReviewViewModelFactory;
 import com.google.android.material.snackbar.Snackbar;
 
 public class BookingDetailActivity extends AppCompatActivity {
@@ -23,7 +27,9 @@ public class BookingDetailActivity extends AppCompatActivity {
 
     private ActivityBookingDetailBinding binding;
     private BookingDetailViewModel viewModel;
+    private ReviewCreateViewModel reviewViewModel;
     private Long bookingId;
+    private Booking currentBooking;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,8 @@ public class BookingDetailActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this, new BookingViewModelFactory(this))
                 .get(BookingDetailViewModel.class);
+        reviewViewModel = new ViewModelProvider(this, new ReviewViewModelFactory(this))
+                .get(ReviewCreateViewModel.class);
 
         observe();
         viewModel.loadBooking(bookingId);
@@ -88,6 +96,17 @@ public class BookingDetailActivity extends AppCompatActivity {
             }
         });
 
+        reviewViewModel.getExistsState().observe(this, res -> {
+            if (res == null || currentBooking == null) return;
+            if (res.status == Resource.Status.SUCCESS) {
+                boolean alreadyReviewed = Boolean.TRUE.equals(res.data);
+                boolean isCompleted = "COMPLETED".equals(currentBooking.getStatus());
+                binding.btnReview.setVisibility(isCompleted && !alreadyReviewed ? View.VISIBLE : View.GONE);
+            } else if (res.status == Resource.Status.ERROR) {
+                binding.btnReview.setVisibility(View.GONE);
+            }
+        });
+
         viewModel.getCancelState().observe(this, res -> {
             if (res == null) return;
             switch (res.status) {
@@ -110,6 +129,7 @@ public class BookingDetailActivity extends AppCompatActivity {
     }
 
     private void bind(Booking b) {
+        currentBooking = b;
         String name = b.getRoom() != null && b.getRoom().getProperty() != null
                 ? b.getRoom().getProperty().getName() : "Homestay";
         String addr = b.getRoom() != null && b.getRoom().getProperty() != null
@@ -130,7 +150,11 @@ public class BookingDetailActivity extends AppCompatActivity {
         binding.btnPay.setVisibility(isPending ? View.VISIBLE : View.GONE);
         binding.btnCancel.setVisibility(isPending ? View.VISIBLE : View.GONE);
         binding.btnCheckout.setVisibility("CONFIRMED".equals(b.getStatus()) ? View.VISIBLE : View.GONE);
-        binding.btnReview.setVisibility("COMPLETED".equals(b.getStatus()) ? View.VISIBLE : View.GONE);
+        // Mặc định ẩn — checkExists callback sẽ bật lại nếu chưa review.
+        binding.btnReview.setVisibility(View.GONE);
+        if ("COMPLETED".equals(b.getStatus())) {
+            reviewViewModel.checkExists(b.getId());
+        }
 
         binding.btnPay.setOnClickListener(v -> {
             Intent i = new Intent(this, PaymentActivity.class);
@@ -144,8 +168,14 @@ public class BookingDetailActivity extends AppCompatActivity {
                 .setNegativeButton("Đóng", null)
                 .show());
         binding.btnCheckout.setOnClickListener(v -> viewModel.completeBooking(b.getId()));
-        binding.btnReview.setOnClickListener(v ->
-                Toast.makeText(this, "Tính năng review sẽ có ở Ưu tiên 3", Toast.LENGTH_SHORT).show());
+        binding.btnReview.setOnClickListener(v -> {
+            Intent i = new Intent(this, ReviewCreateActivity.class);
+            i.putExtra(ReviewCreateActivity.EXTRA_BOOKING_ID, b.getId());
+            i.putExtra(ReviewCreateActivity.EXTRA_PROPERTY_NAME, name);
+            i.putExtra(ReviewCreateActivity.EXTRA_CHECK_IN, b.getCheckInDate());
+            i.putExtra(ReviewCreateActivity.EXTRA_CHECK_OUT, b.getCheckOutDate());
+            startActivity(i);
+        });
     }
 
     private void setRow(int rowId, String label, String value) {

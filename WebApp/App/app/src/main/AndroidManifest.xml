@@ -41,6 +41,15 @@
         <activity
             android:name=".presentation.features.payment.PaymentActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.features.search.SearchResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.features.review.PropertyReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.features.review.ReviewCreateActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

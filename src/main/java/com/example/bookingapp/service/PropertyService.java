@@ -91,16 +91,29 @@ public class PropertyService {
                     .map(this::toRoomSearchResponse)
                     .toList();
 
+            String thumb = propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(p.getId())
+                    .map(PropertyImage::getImageUrl)
+                    .orElseGet(() -> rooms.stream()
+                            .map(RoomSearchResponse::getThumbnailUrl)
+                            .filter(java.util.Objects::nonNull)
+                            .findFirst().orElse(null));
+
             return PropertySearchResponse.builder()
                     .propertyId(p.getId())
                     .propertyName(p.getName())
                     .address(p.getAddress())
                     .city(p.getCity())
+                    .thumbnailUrl(thumb)
                     .availableRooms(rooms)
                     .minPrice(rooms.stream().map(RoomSearchResponse::getPrice)
                             .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO))
                     .build();
         }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getDistinctCities() {
+        return propertyRepository.findDistinctActiveCities();
     }
 
     @Transactional(readOnly = true)

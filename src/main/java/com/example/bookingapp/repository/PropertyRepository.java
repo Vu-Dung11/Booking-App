@@ -44,4 +44,7 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
             @Param("checkOut") LocalDate checkOut,
             @Param("guests") int guests,
             @Param("duration") long duration);
+
+    @Query("SELECT DISTINCT p.city FROM Property p WHERE p.isActive = true ORDER BY p.city")
+    List<String> findDistinctActiveCities();
 }
