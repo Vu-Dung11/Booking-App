@@ -17,6 +17,7 @@ public class BookingCreateViewModel extends ViewModel {
 
     private final MutableLiveData<Resource<PropertyDetailResponse>> detailState = new MutableLiveData<>();
     private final MutableLiveData<Resource<Booking>> createState = new MutableLiveData<>();
+    private final MutableLiveData<Resource<java.util.List<String>>> roomImagesState = new MutableLiveData<>();
 
     public BookingCreateViewModel(PropertyRepository propertyRepository, BookingRepository bookingRepository) {
         this.propertyRepository = propertyRepository;
@@ -25,6 +26,11 @@ public class BookingCreateViewModel extends ViewModel {
 
     public LiveData<Resource<PropertyDetailResponse>> getDetailState() { return detailState; }
     public LiveData<Resource<Booking>> getCreateState() { return createState; }
+    public LiveData<Resource<java.util.List<String>>> getRoomImagesState() { return roomImagesState; }
+
+    public void loadRoomImages(Long roomId) {
+        propertyRepository.getRoomImages(roomId, roomImagesState);
+    }
 
     public void loadDetail(Long propertyId) {
         propertyRepository.getPropertyDetail(propertyId, detailState);

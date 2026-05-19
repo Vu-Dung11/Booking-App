@@ -20,6 +20,11 @@ public class RoomImageController {
 
     private final RoomImageService roomImageService;
 
+    @GetMapping("/{roomId}/images")
+    public ApiResponse<List<String>> getImages(@PathVariable Long roomId) {
+        return ApiResponse.success(roomImageService.getImageUrlsForRoom(roomId));
+    }
+
     @PostMapping(value = "/{roomId}/images", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('HOST')")
     public ApiResponse<List<Map<String, Object>>> uploadRoomImages(

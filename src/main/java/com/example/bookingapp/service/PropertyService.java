@@ -117,8 +117,8 @@ public class PropertyService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Property> getAllProperties(Pageable pageable) {
-        return propertyRepository.findAll(pageable);
+    public Page<com.example.bookingapp.dto.PropertySummaryResponse> getAllProperties(Pageable pageable) {
+        return propertyRepository.findAllSummaries(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -159,8 +159,8 @@ public class PropertyService {
                 .orElseThrow(() -> new AppException(ErrorCode.PROPERTY_NOT_FOUND));
 
         long nights = ChronoUnit.DAYS.between(checkIn, checkOut);
-        Optional<PropertyImage> propThumb = propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(id);
-        String propertyThumb = propThumb.map(PropertyImage::getImageUrl).orElse(null);
+        List<String> propertyImages = getPropertyImageUrls(id);
+        String propertyThumb = propertyImages.isEmpty() ? null : propertyImages.get(0);
 
         List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(id).stream()
                 .filter(r -> guests == null || guests <= 0 || r.getCapacity() >= guests)
@@ -177,8 +177,18 @@ public class PropertyService {
                 .country(property.getCountry())
                 .isActive(property.getIsActive())
                 .thumbnailUrl(propertyThumb)
+                .imageUrls(propertyImages)
                 .rooms(rooms)
                 .build();
+    }
+
+    /** Trả về URL ảnh property — thumbnail trước, các ảnh khác sau. */
+    private List<String> getPropertyImageUrls(Long propertyId) {
+        List<PropertyImage> all = propertyImageRepository.findByPropertyId(propertyId);
+        all.sort((a, b) -> Boolean.compare(
+                !Boolean.TRUE.equals(b.getIsThumbnail()),
+                !Boolean.TRUE.equals(a.getIsThumbnail())));
+        return all.stream().map(PropertyImage::getImageUrl).toList();
     }
 
     /** Build room kèm minAvailable trong [checkIn, checkOut). */
@@ -336,8 +346,8 @@ public class PropertyService {
 
     private PropertyDetailResponse buildDetail(Property property) {
         Long pid = property.getId();
-        Optional<PropertyImage> propThumb = propertyImageRepository.findFirstByPropertyIdAndIsThumbnailTrue(pid);
-        String propertyThumb = propThumb.map(PropertyImage::getImageUrl).orElse(null);
+        List<String> propertyImages = getPropertyImageUrls(pid);
+        String propertyThumb = propertyImages.isEmpty() ? null : propertyImages.get(0);
 
         List<RoomSearchResponse> rooms = roomRepository.findByPropertyId(pid).stream()
                 .map(this::toRoomSearchResponse)
@@ -352,6 +362,7 @@ public class PropertyService {
                 .country(property.getCountry())
                 .isActive(property.getIsActive())
                 .thumbnailUrl(propertyThumb)
+                .imageUrls(propertyImages)
                 .rooms(rooms)
                 .build();
     }

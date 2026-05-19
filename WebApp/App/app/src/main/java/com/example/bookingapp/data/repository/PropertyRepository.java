@@ -90,6 +90,26 @@ public class PropertyRepository {
         });
     }
 
+    public void getRoomImages(Long roomId, MutableLiveData<Resource<List<String>>> state) {
+        state.setValue(Resource.loading());
+        apiService.getRoomImages(roomId).enqueue(new Callback<ApiResponse<List<String>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<String>>> call,
+                                   Response<ApiResponse<List<String>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    state.setValue(Resource.success(response.body().getData()));
+                } else {
+                    state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<String>>> call, Throwable t) {
+                state.setValue(Resource.error(t.getLocalizedMessage(), null));
+            }
+        });
+    }
+
     public void getCities(MutableLiveData<Resource<List<String>>> state) {
         state.setValue(Resource.loading());
         apiService.getCities().enqueue(new Callback<ApiResponse<List<String>>>() {

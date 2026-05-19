@@ -7,6 +7,7 @@ import com.example.bookingapp.data.model.ApiResponse;
 import com.example.bookingapp.data.model.auth.AuthResponse;
 import com.example.bookingapp.data.model.auth.LoginRequest;
 import com.example.bookingapp.data.model.auth.RegisterRequest;
+import com.example.bookingapp.data.model.user.UserResponse;
 import com.example.bookingapp.data.remote.ApiService;
 
 import retrofit2.Call;
@@ -71,6 +72,22 @@ public class AuthRepository {
         });
     }
 
+    public void getMe(MutableLiveData<Resource<UserResponse>> state) {
+        state.setValue(Resource.loading());
+        apiService.getMe().enqueue(new Callback<ApiResponse<UserResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<UserResponse>> call, Response<ApiResponse<UserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    state.setValue(Resource.success(response.body().getData()));
+                } else {
+                    state.setValue(Resource.error("Lỗi HTTP: " + response.code(), null));
+                }
+            }
 
-
+            @Override
+            public void onFailure(Call<ApiResponse<UserResponse>> call, Throwable t) {
+                state.setValue(Resource.error(t.getLocalizedMessage() != null ? t.getLocalizedMessage() : "Lỗi mạng", null));
+            }
+        });
+    }
 }

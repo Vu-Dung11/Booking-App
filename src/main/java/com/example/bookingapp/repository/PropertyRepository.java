@@ -47,4 +47,20 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 
     @Query("SELECT DISTINCT p.city FROM Property p WHERE p.isActive = true ORDER BY p.city")
     List<String> findDistinctActiveCities();
+
+    @Query("""
+        SELECT new com.example.bookingapp.dto.PropertySummaryResponse(
+            p.id, p.name, p.address, p.city,
+            MIN(pi.imageUrl),
+            MIN(r.basePrice),
+            AVG(rv.rating),
+            COUNT(DISTINCT rv.id))
+        FROM Property p
+        LEFT JOIN Room r ON r.property = p
+        LEFT JOIN Review rv ON rv.property = p
+        LEFT JOIN PropertyImage pi ON pi.property = p AND pi.isThumbnail = true
+        WHERE p.isActive = true
+        GROUP BY p.id, p.name, p.address, p.city
+        """)
+    Page<com.example.bookingapp.dto.PropertySummaryResponse> findAllSummaries(Pageable pageable);
 }

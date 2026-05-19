@@ -9,7 +9,12 @@ public class PropertyDetailResponse {
     private String address;
     private String city;
     private String country;
+    private String thumbnailUrl;
+    private List<String> imageUrls;
     private List<RoomResponse> rooms;
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public List<String> getImageUrls() { return imageUrls; }
 
     public Long getPropertyId() {
         return propertyId;

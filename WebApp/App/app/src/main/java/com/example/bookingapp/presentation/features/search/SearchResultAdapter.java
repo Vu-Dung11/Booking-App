@@ -13,18 +13,30 @@ import com.example.bookingapp.R;
 import com.example.bookingapp.core.utils.Formatter;
 import com.example.bookingapp.data.model.views.PropertySearchResponse;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.VH> {
 
     public interface OnClick { void onClick(PropertySearchResponse item); }
+    public interface OnFavoriteToggle { void onToggle(PropertySearchResponse item, boolean wasFavorite); }
 
     private final List<PropertySearchResponse> items;
     private final OnClick onClick;
+    private OnFavoriteToggle favoriteToggle;
+    private Set<Long> favoriteIds = new HashSet<>();
 
     public SearchResultAdapter(List<PropertySearchResponse> items, OnClick onClick) {
         this.items = items;
         this.onClick = onClick;
+    }
+
+    public void setOnFavoriteToggle(OnFavoriteToggle cb) { this.favoriteToggle = cb; }
+
+    public void submitFavoriteIds(Set<Long> ids) {
+        this.favoriteIds = ids != null ? ids : new HashSet<>();
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -46,6 +58,19 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
         h.ivThumbnail.setImageResource(android.R.drawable.ic_menu_gallery);
 
+        boolean isFav = it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId());
+        h.ivFavorite.setImageResource(isFav
+                ? android.R.drawable.btn_star_big_on
+                : android.R.drawable.btn_star_big_off);
+
+        h.ivFavorite.setOnClickListener(v -> {
+            boolean nowFav = !(it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId()));
+            h.ivFavorite.setImageResource(nowFav
+                    ? android.R.drawable.btn_star_big_on
+                    : android.R.drawable.btn_star_big_off);
+            if (favoriteToggle != null) favoriteToggle.onToggle(it, !nowFav);
+        });
+
         h.itemView.setOnClickListener(v -> onClick.onClick(it));
     }
 
@@ -53,11 +78,12 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     public int getItemCount() { return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView ivThumbnail;
+        ImageView ivThumbnail, ivFavorite;
         TextView tvName, tvAddress, tvRoomCount, tvPrice;
         VH(@NonNull View v) {
             super(v);
             ivThumbnail = v.findViewById(R.id.ivThumbnail);
+            ivFavorite = v.findViewById(R.id.ivFavorite);
             tvName = v.findViewById(R.id.tvName);
             tvAddress = v.findViewById(R.id.tvAddress);
             tvRoomCount = v.findViewById(R.id.tvRoomCount);

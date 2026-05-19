@@ -1,5 +1,6 @@
 package com.example.bookingapp.service;
 
+import com.example.bookingapp.configuration.utils.SecurityUtils;
 import com.example.bookingapp.dto.UserResponse;
 import com.example.bookingapp.entity.User;
 import com.example.bookingapp.repository.UserRepository;
@@ -12,6 +13,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final SecurityUtils securityUtils;
+
+    public UserResponse getCurrentUserResponse() {
+        return UserResponse.fromEntity(securityUtils.getCurrentUser());
+    }
 
     public Page<UserResponse> getAllUsers(User.Role role, Pageable pageable) {
         Page<User> usersPage;

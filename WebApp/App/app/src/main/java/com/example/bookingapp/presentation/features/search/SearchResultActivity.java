@@ -11,10 +11,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.bookingapp.core.utils.Formatter;
 import com.example.bookingapp.data.model.views.PropertySearchResponse;
 import com.example.bookingapp.databinding.ActivitySearchResultBinding;
+import com.example.bookingapp.presentation.features.favorite.FavoriteViewModel;
+import com.example.bookingapp.presentation.features.favorite.FavoriteViewModelFactory;
 import com.example.bookingapp.presentation.features.views.PropertyDetailActivity;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.widget.Toast;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class SearchResultActivity extends AppCompatActivity {
@@ -26,6 +31,7 @@ public class SearchResultActivity extends AppCompatActivity {
 
     private ActivitySearchResultBinding binding;
     private SearchViewModel viewModel;
+    private FavoriteViewModel favoriteViewModel;
     private SearchResultAdapter adapter;
     private final List<PropertySearchResponse> items = new ArrayList<>();
 
@@ -54,6 +60,23 @@ public class SearchResultActivity extends AppCompatActivity {
         adapter = new SearchResultAdapter(items, this::openDetail);
         binding.rvResults.setLayoutManager(new LinearLayoutManager(this));
         binding.rvResults.setAdapter(adapter);
+
+        favoriteViewModel = new ViewModelProvider(this, new FavoriteViewModelFactory(this))
+                .get(FavoriteViewModel.class);
+        favoriteViewModel.getFavoriteIds().observe(this, ids ->
+                adapter.submitFavoriteIds(ids != null ? new HashSet<>(ids) : new HashSet<>()));
+        adapter.setOnFavoriteToggle((item, wasFavorite) -> {
+            if (item.getPropertyId() == null) return;
+            favoriteViewModel.toggle(
+                    item.getPropertyId(),
+                    item.getPropertyName(),
+                    item.getThumbnailUrl(),
+                    item.getCity(),
+                    isAdded -> binding.getRoot().post(() ->
+                            Toast.makeText(this,
+                                    isAdded ? "Đã lưu" : "Đã bỏ yêu thích",
+                                    Toast.LENGTH_SHORT).show()));
+        });
 
         viewModel = new ViewModelProvider(this, new SearchViewModelFactory(this))
                 .get(SearchViewModel.class);

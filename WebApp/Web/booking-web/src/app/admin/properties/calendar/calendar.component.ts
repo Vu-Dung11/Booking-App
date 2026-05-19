@@ -177,19 +177,19 @@ export class CalendarComponent implements OnInit {
   private deriveStatus(room: RoomCalendar, data?: DayInventory): CellStatus {
     if (!data || !data.hasInventory) return 'unmanaged';
 
-    // FIX #5: ưu tiên check available=0 trước. Nếu host đã khoá ngày
-    // (available=0) thì giữ status 'blocked' bất kể có booking cũ.
+    // Host đã khoá ngày (chủ động đặt available=0)
     if (data.availableCount === 0) {
       return data.bookedCount > 0 ? 'blocked-with-booking' : 'blocked';
     }
 
-    // Đã đầy thực sự: available > 0 không thể đạt vì hết phòng
-    if (data.bookedCount >= room.quantity) return 'full';
+    // Đã đầy: booked đã đạt giới hạn availableCount mà host cho phép
+    // (không so sánh với quantity — host có thể chỉ mở 3/10 phòng)
+    if (data.bookedCount >= data.availableCount) return 'full';
 
-    // Có khách
+    // Có khách nhưng chưa đầy
     if (data.bookedCount > 0) return 'partial';
 
-    // FIX #1: phân biệt "mở hết" vs "host limit nhưng chưa có khách"
+    // Chưa có ai đặt, nhưng host giới hạn số phòng < số vật lý
     if (data.availableCount < room.quantity) return 'limited';
 
     return 'available';
@@ -229,18 +229,25 @@ export class CalendarComponent implements OnInit {
   setEditPreset(preset: 'open' | 'block'): void {
     const t = this.editTarget();
     if (!t) return;
-    if (preset === 'open') this.editAvailable = t.room.quantity - t.day.bookedCount;
+    // "Mở hết" = mở toàn bộ số phòng vật lý (host cap = quantity)
+    // bookedCount được tính riêng bởi booking system, không trừ ở đây
+    if (preset === 'open') this.editAvailable = t.room.quantity;
     else this.editAvailable = 0;
   }
 
   submitEditDay(): void {
     const t = this.editTarget();
     if (!t) return;
+    const available = Number(this.editAvailable);
+    if (isNaN(available) || available < 0 || available > t.room.quantity) {
+      this.toast.error(`Số phòng trống phải từ 0 đến ${t.room.quantity}`);
+      return;
+    }
     this.isSavingDay.set(true);
     this.inventoryService.bulkUpdate(this.propertyId, t.room.roomId, {
       fromDate: t.day.date,
       toDate: t.day.date,
-      availableCount: this.editAvailable
+      availableCount: available
     }).subscribe({
       next: () => {
         this.isSavingDay.set(false);
@@ -288,11 +295,19 @@ export class CalendarComponent implements OnInit {
     }
     let maxBooked = 0;
     let coveredAll = true;
-    for (let d = new Date(from); this.toIso(d) <= to; d = this.addDays(d, 1)) {
-      const iso = this.toIso(d);
-      const day = room.days.find(x => x.date === iso);
-      if (!day) { coveredAll = false; continue; }
-      if (day.bookedCount > maxBooked) maxBooked = day.bookedCount;
+    // Dùng string comparison để tránh timezone shift khi new Date()
+    let cursor = from;
+    while (cursor <= to) {
+      const day = room.days.find(x => x.date === cursor);
+      if (!day) {
+        coveredAll = false;
+      } else if (day.bookedCount > maxBooked) {
+        maxBooked = day.bookedCount;
+      }
+      // Tăng cursor 1 ngày bằng Date ở local time
+      const next = new Date(cursor + 'T00:00:00');
+      next.setDate(next.getDate() + 1);
+      cursor = this.toIso(next);
     }
     if (!coveredAll) {
       this.bulkMaxAvailable.set(null);   // không đủ data, để BE validate
@@ -319,7 +334,8 @@ export class CalendarComponent implements OnInit {
       this.toast.error('Vui lòng chọn khoảng ngày');
       return;
     }
-    if (this.bulkForm.availableCount < 0 || this.bulkForm.availableCount > r.quantity) {
+    const available = Number(this.bulkForm.availableCount);
+    if (isNaN(available) || available < 0 || available > r.quantity) {
       this.toast.error(`Số phòng trống phải từ 0 đến ${r.quantity}`);
       return;
     }
@@ -327,7 +343,7 @@ export class CalendarComponent implements OnInit {
     this.inventoryService.bulkUpdate(this.propertyId, r.roomId, {
       fromDate: this.bulkForm.fromDate,
       toDate: this.bulkForm.toDate,
-      availableCount: this.bulkForm.availableCount
+      availableCount: available
     }).subscribe({
       next: (updated) => {
         this.isSavingBulk.set(false);
@@ -421,10 +437,21 @@ export class CalendarComponent implements OnInit {
     return cell.date === this.toIso(new Date());
   }
 
-  /** Cell có phải thứ 7 hoặc CN không (theo index trong tuần VN). */
+  /**
+   * Cell có phải thứ 7 hoặc CN không.
+   * Dùng trực tiếp từ date string để tránh sai vị trí filler.
+   */
   isWeekend(index: number): boolean {
+    // index là vị trí trong grid 7-cột (0=T2 ... 5=T7, 6=CN)
     const dow = index % 7;
     return dow === 5 || dow === 6;   // T7 (5), CN (6)
+  }
+
+  /** Trả về ngày trong tuần (VN) của một cell inMonth để tô màu cuối tuần đúng. */
+  getCellWeekday(cell: MonthCell): number {
+    if (!cell.date) return -1;
+    const d = new Date(cell.date + 'T00:00:00'); // force local
+    return (d.getDay() + 6) % 7; // Mon=0, Sun=6
   }
 
   /** DD/MM/YYYY từ ISO date. */
@@ -443,6 +470,10 @@ export class CalendarComponent implements OnInit {
     }
     const label = this.getStatusLabel(cell.status);
     const todayMarker = this.isToday(cell) ? ' (Hôm nay)' : '';
-    return `${dateStr}${todayMarker} — ${label}. ${cell.data.availableCount} phòng trống / ${room.quantity} phòng vật lý. ${cell.data.bookedCount} đơn đang giữ chỗ.`;
+    // Phòng có thể đặt thêm = availableCount (cap host đặt) − bookedCount (đã giữ chỗ)
+    const remainingBookable = Math.max(0, cell.data.availableCount - cell.data.bookedCount);
+    return `${dateStr}${todayMarker} — ${label}. ` +
+      `${remainingBookable} phòng có thể đặt thêm ` +
+      `(giới hạn: ${cell.data.availableCount}, đã giữ: ${cell.data.bookedCount} / ${room.quantity} phòng vật lý).`;
   }
 }

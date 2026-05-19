@@ -53,6 +53,9 @@ public interface ApiService {
     @GET("api/v1/properties/cities")
     Call<ApiResponse<List<String>>> getCities();
 
+    @GET("api/v1/rooms/{id}/images")
+    Call<ApiResponse<List<String>>> getRoomImages(@Path("id") Long id);
+
     @GET("api/v1/properties/search")
     Call<ApiResponse<List<PropertySearchResponse>>> searchProperties(
             @Query("city") String city,
@@ -62,6 +65,9 @@ public interface ApiService {
     );
 
     // ===== Users =====
+    @GET("api/v1/users/me")
+    Call<ApiResponse<UserResponse>> getMe();
+
     @GET("api/v1/users/{id}")
     Call<ApiResponse<UserResponse>> getUserById(@Path("id") Long id);
 

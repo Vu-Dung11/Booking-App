@@ -26,6 +26,11 @@ public class UserController {
         return ApiResponse.success(users);
     }
 
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> me() {
+        return ApiResponse.success(userService.getCurrentUserResponse());
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse user = userService.getUserById(id);

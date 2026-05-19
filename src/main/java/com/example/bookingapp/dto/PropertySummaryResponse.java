@@ -1,27 +1,23 @@
 package com.example.bookingapp.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyDetailResponse {
-    private Long propetyId;
+public class PropertySummaryResponse {
+    private Long id;
     private String name;
-    private String description;
     private String address;
     private String city;
-    private String country;
-    private Boolean isActive;
     private String thumbnailUrl;
-    private List<String> imageUrls;
-    private List<RoomSearchResponse> rooms;
+    private BigDecimal minPrice;
+    private Double averageRating;
+    private Long reviewCount;
 }

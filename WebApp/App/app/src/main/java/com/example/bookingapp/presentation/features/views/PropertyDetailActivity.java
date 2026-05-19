@@ -20,8 +20,12 @@ import com.example.bookingapp.presentation.features.home.PropertyDetailViewModel
 import com.example.bookingapp.presentation.features.home.RoomAdapter;
 import com.example.bookingapp.presentation.features.review.PropertyReviewsActivity;
 import com.example.bookingapp.presentation.features.review.ReviewAdapter;
+import com.example.bookingapp.presentation.common.ImagePagerAdapter;
 import com.example.bookingapp.presentation.features.review.ReviewListViewModel;
 import com.example.bookingapp.presentation.features.review.ReviewViewModelFactory;
+import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.util.Collections;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -167,6 +171,8 @@ public class PropertyDetailActivity extends AppCompatActivity {
                                         ? resource.data.getDescription()
                                         : "Chưa có mô tả");
 
+                        setupPropertyPager(resource.data);
+
                         roomList.clear();
                         if (resource.data.getRooms() != null) {
                             roomList.addAll(resource.data.getRooms());
@@ -189,6 +195,24 @@ public class PropertyDetailActivity extends AppCompatActivity {
                 Formatter.toApiDate(checkInMillis),
                 Formatter.toApiDate(checkOutMillis),
                 guests);
+    }
+
+    private void setupPropertyPager(com.example.bookingapp.data.model.views.PropertyDetailResponse detail) {
+        java.util.List<String> urls = detail.getImageUrls();
+        if (urls == null || urls.isEmpty()) {
+            urls = detail.getThumbnailUrl() != null
+                    ? java.util.Collections.singletonList(detail.getThumbnailUrl())
+                    : Collections.emptyList();
+        }
+        ImagePagerAdapter pagerAdapter = new ImagePagerAdapter(urls);
+        binding.vpPropertyImages.setAdapter(pagerAdapter);
+        if (urls.size() > 1) {
+            new TabLayoutMediator(binding.dotsIndicator, binding.vpPropertyImages,
+                    (tab, pos) -> {}).attach();
+            binding.dotsIndicator.setVisibility(View.VISIBLE);
+        } else {
+            binding.dotsIndicator.setVisibility(View.GONE);
+        }
     }
 
     private void setupReviewSection() {

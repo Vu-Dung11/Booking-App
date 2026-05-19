@@ -136,11 +136,15 @@
             </div>
           }
           <div class="form-group">
-            <label>Số phòng còn trống</label>
+            <label>Số phòng cho phép đặt (cap)</label>
             <input type="number"
                    [(ngModel)]="editAvailable"
                    [min]="0"
-                   [max]="editTarget()!.room.quantity - editTarget()!.day.bookedCount" />
+                   [max]="editTarget()!.room.quantity" />
+            <small class="hint">
+              Tối đa {{ editTarget()!.room.quantity }} phòng vật lý.
+              Hiện {{ editTarget()!.day.bookedCount }} đơn đã giữ chỗ — nếu cap < bookedCount, hệ thống sẽ từ chối.
+            </small>
           </div>
           <div class="preset-row">
             <button type="button" class="btn-secondary btn-sm" (click)="setEditPreset('open')">Mở hết</button>

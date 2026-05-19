@@ -24,6 +24,8 @@ import com.example.bookingapp.data.model.views.Category;
 import com.example.bookingapp.data.model.views.Homestay;
 import com.example.bookingapp.data.model.views.PropertyResponse;
 import com.example.bookingapp.databinding.FragmentHomeBinding;
+import com.example.bookingapp.presentation.features.favorite.FavoriteViewModel;
+import com.example.bookingapp.presentation.features.favorite.FavoriteViewModelFactory;
 import com.example.bookingapp.presentation.features.search.SearchResultActivity;
 import com.example.bookingapp.presentation.features.search.SearchViewModel;
 import com.example.bookingapp.presentation.features.search.SearchViewModelFactory;
@@ -36,6 +38,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private HomeViewModel viewModel;
     private SearchViewModel searchViewModel;
+    private FavoriteViewModel favoriteViewModel;
     private CategoryAdapter categoryAdapter;
     private HomestayAdapter homestayAdapter;
     private final List<Category> categoryList = new ArrayList<>();
@@ -76,6 +80,9 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 .get(SearchViewModel.class);
         searchViewModel.loadCities();
 
+        favoriteViewModel = new ViewModelProvider(this, new FavoriteViewModelFactory(requireContext()))
+                .get(FavoriteViewModel.class);
+
         long today = MaterialDatePicker.todayInUtcMilliseconds();
         checkInMillis = today;
         checkOutMillis = today + TimeUnit.DAYS.toMillis(1);
@@ -105,6 +112,21 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 intent.putExtra(PropertyDetailActivity.EXTRA_PROPERTY_ID, homestay.getPropertyId());
                 startActivity(intent);
             }
+        });
+        homestayAdapter.setOnFavoriteToggle((homestay, wasFavorite) -> {
+            if (homestay.getPropertyId() == null) return;
+            favoriteViewModel.toggle(
+                    homestay.getPropertyId(),
+                    homestay.getName(),
+                    null,
+                    homestay.getLocation(),
+                    isAdded -> {
+                        if (getContext() == null) return;
+                        getBinding().getRoot().post(() ->
+                                Toast.makeText(getContext(),
+                                        isAdded ? "Đã lưu" : "Đã bỏ yêu thích",
+                                        Toast.LENGTH_SHORT).show());
+                    });
         });
         getBinding().rvHomestay.setAdapter(homestayAdapter);
 
@@ -267,11 +289,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                         for (PropertyResponse p : resource.data.getContent()) {
                             homestayList.add(new Homestay(
                                     p.getPropertyId(),
-                                    null,
+                                    p.getThumbnailUrl(),
                                     p.getPropertyName(),
                                     p.getCity() + ", " + p.getAddress(),
                                     p.getMinPrice() != null ? p.getMinPrice().doubleValue() : 0,
-                                    0.0,
+                                    p.getAverageRating(),
                                     false
                             ));
                         }
@@ -290,5 +312,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 cachedCities = new ArrayList<>(resource.data);
             }
         });
+
+        favoriteViewModel.getFavoriteIds().observe(getViewLifecycleOwner(), ids ->
+                homestayAdapter.submitFavoriteIds(ids != null ? new HashSet<>(ids) : new HashSet<>()));
     }
 }

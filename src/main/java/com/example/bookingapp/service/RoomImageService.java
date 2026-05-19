@@ -92,6 +92,16 @@ public class RoomImageService {
         return roomImageRepository.findByRoomId(roomId);
     }
 
+    /** Trả về danh sách URL ảnh cho 1 room — thumbnail trước, các ảnh khác sau. */
+    @Transactional(readOnly = true)
+    public List<String> getImageUrlsForRoom(Long roomId) {
+        List<RoomImage> all = roomImageRepository.findByRoomId(roomId);
+        all.sort((a, b) -> Boolean.compare(
+                !Boolean.TRUE.equals(b.getIsThumbnail()),
+                !Boolean.TRUE.equals(a.getIsThumbnail())));
+        return all.stream().map(RoomImage::getImageUrl).toList();
+    }
+
     @Transactional
     public void deleteImage(Long propertyId, Long roomId, Long imageId) {
         requireOwnedRoom(propertyId, roomId);

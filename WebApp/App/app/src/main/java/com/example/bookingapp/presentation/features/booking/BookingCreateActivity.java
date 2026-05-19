@@ -15,7 +15,9 @@ import com.example.bookingapp.data.model.booking.BookingRequest;
 import com.example.bookingapp.data.model.views.PropertyDetailResponse;
 import com.example.bookingapp.data.model.views.RoomResponse;
 import com.example.bookingapp.databinding.ActivityBookingCreateBinding;
+import com.example.bookingapp.presentation.common.ImagePagerAdapter;
 import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -36,6 +38,7 @@ public class BookingCreateActivity extends AppCompatActivity {
 
     private ActivityBookingCreateBinding binding;
     private BookingCreateViewModel viewModel;
+    private ImagePagerAdapter imagePagerAdapter;
 
     private final List<RoomResponse> rooms = new ArrayList<>();
     private RoomResponse selectedRoom;
@@ -79,6 +82,11 @@ public class BookingCreateActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this, new BookingCreateViewModelFactory(this))
                 .get(BookingCreateViewModel.class);
 
+        imagePagerAdapter = new ImagePagerAdapter(new ArrayList<>());
+        binding.vpRoomImages.setAdapter(imagePagerAdapter);
+        new TabLayoutMediator(binding.dotsIndicator, binding.vpRoomImages,
+                (tab, pos) -> {}).attach();
+
         binding.btnCheckIn.setOnClickListener(v -> pickDate(true));
         binding.btnCheckOut.setOnClickListener(v -> pickDate(false));
         binding.btnMinus.setOnClickListener(v -> changeQuantity(-1));
@@ -109,6 +117,17 @@ public class BookingCreateActivity extends AppCompatActivity {
                     binding.progress.setVisibility(View.GONE);
                     Snackbar.make(binding.getRoot(), res.message != null ? res.message : "Lỗi", Snackbar.LENGTH_LONG).show();
                     break;
+            }
+        });
+
+        viewModel.getRoomImagesState().observe(this, res -> {
+            if (res == null) return;
+            if (res.status == com.example.bookingapp.core.utils.Resource.Status.SUCCESS && res.data != null) {
+                imagePagerAdapter.submit(res.data);
+                binding.dotsIndicator.setVisibility(res.data.size() > 1 ? View.VISIBLE : View.GONE);
+            } else if (res.status == com.example.bookingapp.core.utils.Resource.Status.ERROR) {
+                imagePagerAdapter.submit(new ArrayList<>());
+                binding.dotsIndicator.setVisibility(View.GONE);
             }
         });
 
@@ -174,6 +193,7 @@ public class BookingCreateActivity extends AppCompatActivity {
             selectedRoom = rooms.get(position);
             updateMaxQuantityFromRoom();
             recomputeTotal();
+            if (selectedRoom.getRoomId() != null) viewModel.loadRoomImages(selectedRoom.getRoomId());
         });
 
         int idx = 0;
@@ -189,6 +209,7 @@ public class BookingCreateActivity extends AppCompatActivity {
             binding.spRoom.setText(labels.get(idx), false);
             updateMaxQuantityFromRoom();
             recomputeTotal();
+            if (selectedRoom.getRoomId() != null) viewModel.loadRoomImages(selectedRoom.getRoomId());
         }
     }
 

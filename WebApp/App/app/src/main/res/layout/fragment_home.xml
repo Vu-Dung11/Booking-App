@@ -228,10 +228,13 @@
                 android:text="Khám phá theo loại"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone"
+
+                />
 
             <androidx.recyclerview.widget.RecyclerView
-
+                android:visibility="gone"
                 android:id="@+id/rvCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -261,6 +264,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/tvSeeAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

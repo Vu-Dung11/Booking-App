@@ -71,7 +71,7 @@ public class PropertyController {
     }
 
     @GetMapping
-    public ApiResponse<Page<Property>> getAllProperties(
+    public ApiResponse<Page<com.example.bookingapp.dto.PropertySummaryResponse>> getAllProperties(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
