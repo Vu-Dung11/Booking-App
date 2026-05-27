@@ -52,6 +52,8 @@ dependencies {
 
     // Room - local DB cho favorite
     implementation("androidx.room:room-runtime:2.7.0")
+    implementation(libs.google.material)
+    implementation(libs.core)
     annotationProcessor("androidx.room:room-compiler:2.7.0")
 
     // Glide - load ảnh từ Cloudinary URL

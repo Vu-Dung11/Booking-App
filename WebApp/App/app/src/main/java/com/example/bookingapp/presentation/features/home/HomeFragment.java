@@ -328,7 +328,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 case LOADING:
                     break;
                 case SUCCESS:
-UU                    Log.d("HOME", "Data: " + resource.data);
+//UU                    Log.d("HOME", "Data: " + resource.data);
                     if (resource.data != null && resource.data.getContent() != null) {
                         homestayList.clear();
                         for (PropertyResponse p : resource.data.getContent()) {
