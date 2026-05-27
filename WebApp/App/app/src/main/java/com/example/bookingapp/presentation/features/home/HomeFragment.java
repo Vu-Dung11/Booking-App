@@ -7,6 +7,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +30,7 @@ import com.example.bookingapp.data.model.views.PropertyResponse;
 import com.example.bookingapp.databinding.FragmentHomeBinding;
 import com.example.bookingapp.presentation.features.favorite.FavoriteViewModel;
 import com.example.bookingapp.presentation.features.favorite.FavoriteViewModelFactory;
+import com.example.bookingapp.presentation.features.chat.ChatActivity;
 import com.example.bookingapp.presentation.features.search.SearchResultActivity;
 import com.example.bookingapp.presentation.features.search.SearchViewModel;
 import com.example.bookingapp.presentation.features.search.SearchViewModelFactory;
@@ -135,31 +140,71 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         getBinding().layoutSearchDate.setOnClickListener(v -> showDateRangePicker());
         getBinding().layoutSearchGuest.setOnClickListener(v -> showGuestSheet());
         getBinding().btnSearch.setOnClickListener(v -> performSearch());
+
+        getBinding().fabChat.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ChatActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void showCityPicker() {
-        List<String> recent = loadHistory();
-        List<String> base = (cachedCities == null || cachedCities.isEmpty()) ? SUGGESTED_CITIES : cachedCities;
+        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.sheet_city_picker, null);
+        
+        com.google.android.material.textfield.TextInputEditText etSearch = view.findViewById(R.id.etSearchCity);
+        LinearLayout layoutList = view.findViewById(R.id.layoutCityList);
+        
+        Runnable populateList = () -> {
+            layoutList.removeAllViews();
+            String query = etSearch.getText() != null ? etSearch.getText().toString().toLowerCase().trim() : "";
+            
+            List<String> recent = loadHistory();
+            List<String> base = (cachedCities == null || cachedCities.isEmpty()) ? SUGGESTED_CITIES : cachedCities;
+            
+            // Add Recent
+            if (query.isEmpty() && !recent.isEmpty()) {
+                for (String r : recent) {
+                    addCityItemToLayout(layoutList, r, true, sheet);
+                }
+            }
+            
+            // Add Suggestions (filtered by query)
+            for (String c : base) {
+                if (c.toLowerCase().contains(query)) {
+                    addCityItemToLayout(layoutList, c, false, sheet);
+                }
+            }
+        };
+        
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) { populateList.run(); }
+        });
+        
+        populateList.run();
+        sheet.setContentView(view);
+        sheet.show();
+    }
 
-        List<String> items = new ArrayList<>();
-        for (String r : recent) items.add("🕘  " + r);
-        for (String c : base) items.add(c);
-
-        if (items.isEmpty()) {
-            Toast.makeText(getContext(), "Đang tải danh sách thành phố…", Toast.LENGTH_SHORT).show();
-            return;
+    private void addCityItemToLayout(LinearLayout parent, String city, boolean isRecent, BottomSheetDialog sheet) {
+        View item = LayoutInflater.from(getContext()).inflate(R.layout.item_city_picker, parent, false);
+        ImageView ivIcon = item.findViewById(R.id.ivCityIcon);
+        TextView tvName = item.findViewById(R.id.tvCityName);
+        
+        tvName.setText(city);
+        if (isRecent) {
+            ivIcon.setImageResource(R.drawable.ic_history);
+        } else {
+            ivIcon.setImageResource(R.drawable.ic_location_on);
         }
-        String[] arr = items.toArray(new String[0]);
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(recent.isEmpty() ? "Chọn địa điểm" : "Tìm gần đây & gợi ý")
-                .setItems(arr, (dialog, which) -> {
-                    String picked = arr[which];
-                    if (picked.startsWith("🕘")) picked = picked.replace("🕘", "").trim();
-                    selectedCity = picked;
-                    getBinding().tvSearchLocation.setText(selectedCity);
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+        
+        item.setOnClickListener(v -> {
+            selectedCity = city;
+            getBinding().tvSearchLocation.setText(selectedCity);
+            sheet.dismiss();
+        });
+        parent.addView(item);
     }
 
     private void setupSuggestedChips() {
@@ -283,7 +328,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 case LOADING:
                     break;
                 case SUCCESS:
-                    Log.d("HOME", "Data: " + resource.data);
+UU                    Log.d("HOME", "Data: " + resource.data);
                     if (resource.data != null && resource.data.getContent() != null) {
                         homestayList.clear();
                         for (PropertyResponse p : resource.data.getContent()) {

@@ -60,14 +60,14 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
         boolean isFav = it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId());
         h.ivFavorite.setImageResource(isFav
-                ? android.R.drawable.btn_star_big_on
-                : android.R.drawable.btn_star_big_off);
+                ? R.drawable.ic_favorite
+                : R.drawable.ic_favorite_border);
 
         h.ivFavorite.setOnClickListener(v -> {
             boolean nowFav = !(it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId()));
             h.ivFavorite.setImageResource(nowFav
-                    ? android.R.drawable.btn_star_big_on
-                    : android.R.drawable.btn_star_big_off);
+                    ? R.drawable.ic_favorite
+                    : R.drawable.ic_favorite_border);
             if (favoriteToggle != null) favoriteToggle.onToggle(it, !nowFav);
         });
 

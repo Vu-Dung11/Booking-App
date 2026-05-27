@@ -16,6 +16,7 @@ Hệ thống quản lý homestay dành cho **Admin** và **Chủ homestay (Host)
 - **Payment:** VNPay sandbox
 - **Image Upload:** Cloudinary
 - **API Docs:** SpringDoc OpenAPI (Swagger UI)
+- **AI Chatbot:** Google Gemini API (`gemini-2.0-flash`) qua SDK `google-genai` — Function Calling để gọi service nội bộ
 - **Build:** Maven Wrapper (`./mvnw`)
 
 ### Frontend Web (Admin Panel) — `WebApp/Web/booking-web/`
@@ -140,6 +141,26 @@ bookingapp/
 | comment | String | TEXT |
 | createdAt | LocalDateTime | auto-set @PrePersist |
 
+### ChatSession
+| Field | Type | Notes |
+|-------|------|-------|
+| id | String | PK, UUID |
+| user | User | FK `user_id`, ManyToOne LAZY |
+| title | String | Tieu de session (auto-gen tu tin nhan dau) |
+| createdAt | LocalDateTime | @PrePersist |
+| lastActiveAt | LocalDateTime | Update moi khi co message moi |
+
+### ChatMessage
+| Field | Type | Notes |
+|-------|------|-------|
+| id | Long | PK |
+| session | ChatSession | FK `session_id`, ManyToOne LAZY |
+| role | Enum | `USER`, `ASSISTANT`, `TOOL` |
+| content | String | TEXT, noi dung tin nhan |
+| toolName | String | nullable, ten function khi role=TOOL |
+| toolArgs | String | nullable, JSON arguments |
+| createdAt | LocalDateTime | @PrePersist |
+
 ### PropertyImage
 | Field | Type | Notes |
 |-------|------|-------|
@@ -218,6 +239,14 @@ Error: `{ "code": <errorCode>, "message": "<errorMessage>", "data": null }`
 | Method | Path | Body | Response | Notes |
 |--------|------|------|----------|-------|
 | POST | `/` | `ReviewRequest` { bookingId, rating, comment } | `String` | Only COMPLETED bookings |
+
+### Chat (AI Chatbot) — `/api/v1/chat` (AUTHENTICATED)
+| Method | Path | Body/Params | Response | Notes |
+|--------|------|-------------|----------|-------|
+| POST | `/session` | — | `{ sessionId }` | Tao session moi cho user dang dang nhap |
+| POST | `/message` | `ChatMessageRequest` { sessionId, message, currentPropertyId? } | `ChatMessageResponse` { reply, suggestions[], cards[]? } | Gui tin nhan, nhan reply tu Gemini |
+| GET | `/history` | `?sessionId=X` | `List<ChatMessage>` | Lich su tin nhan cua session |
+| GET | `/sessions` | — | `List<ChatSession>` | Tat ca session cua user |
 
 ### Media — `/api/v1/media` (PUBLIC)
 | Method | Path | Body | Response | Notes |
@@ -381,6 +410,92 @@ Theo phong cach **Mixpanel** — toi gian, hien dai, chuyen nghiep.
 - Main content: max-width `1200px`, padding `32px`
 - Page header: Title (`24px`, `600`) + muted description + action button (top-right)
 - Sections gap: `24px`
+
+---
+
+---
+
+## AI Chatbot Module
+
+Chatbot ho tro Guest tren **Android client** (mobile app). Backend lam orchestrator goi Gemini API; Android **khong goi truc tiep** Gemini de bao mat API key.
+
+### Muc tieu
+Ho tro Guest cac chuc nang:
+1. Tim property theo nhu cau (city, ngay, so khach, gia)
+2. Hoi chi tiet property dang xem
+3. Tra cuu booking cua minh
+4. Huong dan thanh toan / chinh sach huy
+5. Conversational booking (tao booking qua chat)
+
+### Kien truc
+
+```
+Android ChatActivity
+   ↓ POST /api/v1/chat/message  (JWT)
+ChatController
+   ↓
+ChatService
+   ├─ Load history tu ChatMessage repo
+   ├─ Goi GeminiChatService.chat(messages, tools)
+   ├─ Neu Gemini tra functionCall → ToolExecutor goi service noi bo
+   │    (PropertyService, BookingService, ...)
+   ├─ Gui tool result lai Gemini → nhan reply cuoi
+   └─ Save USER + ASSISTANT messages, return reply
+```
+
+### Backend Components (can them)
+
+**Package moi:** `com.example.bookingapp.chat`
+- `entity/ChatSession.java`, `entity/ChatMessage.java`, `entity/ChatRole.java` (enum)
+- `repository/ChatSessionRepository.java`, `repository/ChatMessageRepository.java`
+- `dto/ChatMessageResponse.java`, `dto/PropertyCard.java` (cho rich card trong chat)
+- `form/ChatMessageRequest.java`
+- `controller/ChatController.java`
+- `service/ChatService.java` — orchestrator
+- `service/GeminiChatService.java` — wrap Google GenAI SDK
+- `service/ChatToolExecutor.java` — map functionCall → service noi bo
+- `service/ChatToolRegistry.java` — dinh nghia FunctionDeclaration list
+
+### Tools (Gemini Function Declarations)
+| Tool name | Maps to | Args |
+|---|---|---|
+| `searchProperties` | `PropertyService.search()` | city, checkIn, checkOut, guests, maxPrice? |
+| `getPropertyDetail` | `PropertyService.getDetail()` | propertyId |
+| `getMyBookings` | `BookingService.getByGuest()` | status? |
+| `getBookingDetail` | `BookingService.getById()` | bookingId |
+| `createBooking` | `BookingService.create()` | roomId, checkIn, checkOut, roomQuantity |
+| `getFAQ` | static text / DB | topic (payment, cancel, checkin) |
+
+### Config (application.properties — placeholder)
+```properties
+gemini.api.key=${GEMINI_API_KEY:}
+gemini.model=gemini-2.0-flash
+chat.history.max-messages=20
+chat.system-prompt=Ban la tro ly ao cua BookingApp...
+```
+
+### Android Components (can them)
+Package: `WebApp/App/.../presentation/features/chat/`
+- `ChatActivity.java` — full-screen chat
+- `ChatViewModel.java` — state, gui/nhan message
+- `ChatAdapter.java` — RecyclerView, 4 view types: USER, ASSISTANT, TYPING, PROPERTY_CARD
+- `model/ChatMessage.java`, `ChatRequest.java`, `ChatResponse.java`, `PropertyCard.java`
+- Retrofit: them `ChatApi` voi 4 endpoints tren
+- FAB chatbot icon o `HomeFragment` → mo `ChatActivity`
+- Persist `sessionId` trong SharedPreferences
+
+### Security
+- `/api/v1/chat/**` requires authentication (JWT) — chi Guest da dang nhap moi chat duoc
+- Tool execution: dung `SecurityUtils.getCurrentUserId()` de filter du lieu theo user
+  (vi du `getMyBookings` chi tra booking cua user hien tai, khong duoc lo du lieu user khac)
+- Validate functionCall args truoc khi goi service
+
+### Error Codes (them moi)
+| Code | Key | Message |
+|------|-----|---------|
+| 512 | CHAT_SESSION_NOT_FOUND | Khong tim thay session chat |
+| 513 | GEMINI_API_ERROR | Loi goi Gemini API |
+| 514 | CHAT_TOOL_EXECUTION_FAILED | Loi thuc thi function call |
 
 ---
 

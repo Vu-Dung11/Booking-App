@@ -15,6 +15,7 @@ import com.example.bookingapp.data.model.review.ReviewResponse;
 import com.example.bookingapp.data.model.views.RoomResponse;
 import com.example.bookingapp.databinding.ActivityPropertyDetailBinding;
 import com.example.bookingapp.presentation.features.booking.BookingCreateActivity;
+import com.example.bookingapp.presentation.features.chat.ChatActivity;
 import com.example.bookingapp.presentation.features.home.PropertyDetailViewModel;
 import com.example.bookingapp.presentation.features.home.PropertyDetailViewModelFactory;
 import com.example.bookingapp.presentation.features.home.RoomAdapter;
@@ -61,6 +62,14 @@ public class PropertyDetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         propertyId = getIntent().getLongExtra(EXTRA_PROPERTY_ID, -1);
+
+        binding.fabChat.setOnClickListener(v -> {
+            Intent i = new Intent(this, ChatActivity.class);
+            if (propertyId != null && propertyId > 0) {
+                i.putExtra(ChatActivity.EXTRA_PROPERTY_ID, propertyId);
+            }
+            startActivity(i);
+        });
 
         // Default: hôm nay → mai
         long todayUtcMidnight = MaterialDatePicker.todayInUtcMilliseconds();

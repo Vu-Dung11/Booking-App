@@ -30,7 +30,10 @@ public enum ErrorCode {
     ROOM_HAS_BOOKING(409, "Không thể xoá phòng vì còn đơn đặt phòng. Hãy chờ các đơn hoàn tất hoặc huỷ trước."),
     INVALID_BOOKING_STATUS_FOR_CANCEL(410, "Đơn hàng đã hoàn tất hoặc đã huỷ trước đó, không thể huỷ thêm."),
     INVENTORY_EXCEEDS_CAPACITY(411, "Số phòng trống vượt quá tổng số phòng vật lý hoặc nhỏ hơn số phòng đã được đặt."),
-    INVALID_DATE_RANGE(412, "Khoảng ngày không hợp lệ.");
+    INVALID_DATE_RANGE(412, "Khoảng ngày không hợp lệ."),
+    CHAT_SESSION_NOT_FOUND(512, "Không tìm thấy session chat"),
+    GEMINI_API_ERROR(513, "Lỗi gọi Gemini API"),
+    CHAT_TOOL_EXECUTION_FAILED(514, "Lỗi thực thi function call");
 
     private final int code;
     private final String message;

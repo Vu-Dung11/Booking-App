@@ -15,8 +15,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException e) {
         ErrorCode errorCode = e.getErrorCode();
-        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), errorCode.getMessage());
-        // Trả về HTTP Status 400 (Bad Request) nhưng body vẫn là format ApiResponse của mình
+        String msg = e.getDetail() != null
+                ? errorCode.getMessage() + " - " + e.getDetail()
+                : errorCode.getMessage();
+        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), msg);
         return ResponseEntity.badRequest().body(response);
     }
 

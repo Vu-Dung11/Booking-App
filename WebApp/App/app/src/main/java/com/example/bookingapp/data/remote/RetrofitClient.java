@@ -28,5 +28,9 @@ public class RetrofitClient {
     public static ApiService getApiService(Context context) {
         return getInstance(context).create(ApiService.class);
     }
+
+    public static ChatApi getChatApi(Context context) {
+        return getInstance(context).create(ChatApi.class);
+    }
 }
 

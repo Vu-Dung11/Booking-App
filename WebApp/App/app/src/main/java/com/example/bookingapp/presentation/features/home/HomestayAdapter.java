@@ -72,7 +72,7 @@ public class HomestayAdapter extends RecyclerView.Adapter<HomestayAdapter.ViewHo
 
         Double rating = homestay.getRating();
         if (rating != null && rating > 0) {
-            holder.binding.tvRating.setText(String.format(Locale.US, "⭐ %.1f", rating));
+            holder.binding.tvRating.setText(String.format(Locale.US, "%.1f", rating));
             holder.binding.tvRating.setBackgroundResource(R.drawable.bg_rating);
             holder.binding.tvRating.setTextColor(
                     ContextCompat.getColor(holder.itemView.getContext(), R.color.text_primary));
@@ -111,12 +111,11 @@ public class HomestayAdapter extends RecyclerView.Adapter<HomestayAdapter.ViewHo
 
     private void updateFavoriteIcon(ViewHolder holder, boolean isFavorite) {
         if (isFavorite) {
-            holder.binding.ivFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+            holder.binding.ivFavorite.setImageResource(R.drawable.ic_favorite);
         } else {
-            holder.binding.ivFavorite.setImageResource(android.R.drawable.btn_star_big_off);
+            holder.binding.ivFavorite.setImageResource(R.drawable.ic_favorite_border);
         }
-        holder.binding.ivFavorite.setColorFilter(
-                ContextCompat.getColor(holder.itemView.getContext(), R.color.accent));
+        holder.binding.ivFavorite.setColorFilter(null);
     }
 
     @Override

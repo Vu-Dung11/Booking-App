@@ -63,6 +63,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/media/**").permitAll()
                         // Các API khác yêu cầu phải đăng nhập
                         .requestMatchers("/api/v1/payments/**").permitAll()
+                        .requestMatchers("/api/v1/chat/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // Không lưu trữ session (Session Creation Policy = STATELESS)
