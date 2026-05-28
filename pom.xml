@@ -120,11 +120,7 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.genai</groupId>
-            <artifactId>google-genai</artifactId>
-            <version>1.10.0</version>
-        </dependency>
+        <!-- Ollama: dùng Spring WebClient/RestTemplate có sẵn trong spring-boot-starter-web -->
     </dependencies>
 
     <build>

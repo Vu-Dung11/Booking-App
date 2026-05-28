@@ -4,7 +4,8 @@
       "Bash(nvm use:*)",
       "Bash(npx ng:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4200/login)",
-      "Bash(npx --yes playwright install chromium)"
+      "Bash(npx --yes playwright install chromium)",
+      "WebFetch(domain:docs.ollama.com)"
     ]
   }
 }

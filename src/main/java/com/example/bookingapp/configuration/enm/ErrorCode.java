@@ -32,7 +32,7 @@ public enum ErrorCode {
     INVENTORY_EXCEEDS_CAPACITY(411, "Số phòng trống vượt quá tổng số phòng vật lý hoặc nhỏ hơn số phòng đã được đặt."),
     INVALID_DATE_RANGE(412, "Khoảng ngày không hợp lệ."),
     CHAT_SESSION_NOT_FOUND(512, "Không tìm thấy session chat"),
-    GEMINI_API_ERROR(513, "Lỗi gọi Gemini API"),
+    GEMINI_API_ERROR(513, "Lỗi gọi Ollama API"),
     CHAT_TOOL_EXECUTION_FAILED(514, "Lỗi thực thi function call");
 
     private final int code;
