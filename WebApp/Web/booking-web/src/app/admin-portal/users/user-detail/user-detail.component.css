@@ -1,0 +1,117 @@
+.back-link { margin-bottom: 16px; }
+.back-link a { color: var(--color-text-muted); font-size: 13px; font-weight: 500; }
+.back-link a:hover { color: var(--color-primary); }
+
+.loading-state { padding: 60px; text-align: center; color: var(--color-text-muted); }
+
+.card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.profile-card { margin-bottom: 20px; }
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.big-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A78BFA, #7C5CFC);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-info { flex: 1; min-width: 200px; }
+.profile-info h2 { font-size: 22px; font-weight: 700; color: var(--color-text); margin-bottom: 8px; }
+
+.profile-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.role-badge.badge-admin { background: #FEF3C7; color: #92400E; }
+.role-badge.badge-host { background: #EDE9FE; color: #5B21B6; }
+.role-badge.badge-guest { background: #DBEAFE; color: #1E40AF; }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+.status-badge.active { background: #DCFCE7; color: #166534; }
+.status-badge.locked { background: #FEE2E2; color: #991B1B; }
+
+.profile-contact { display: flex; gap: 18px; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; }
+.profile-contact strong { color: var(--color-text-secondary); margin-right: 4px; }
+
+.profile-actions { display: flex; gap: 10px; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-block {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.stat-block .lbl { font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-block .val { font-size: 26px; font-weight: 700; color: var(--color-text); letter-spacing: -0.02em; }
+
+/* Buttons + modal — same as user-list */
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: var(--font-family);
+  transition: all var(--transition-fast);
+}
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-secondary { background: transparent; color: var(--color-text-secondary); border-color: var(--color-border); }
+.btn-secondary:hover:not(:disabled) { background: var(--color-bg-secondary); }
+.btn-danger { background: #EF4444; color: white; }
+.btn-danger:hover:not(:disabled) { background: #DC2626; }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-xl);
+}
+.modal h3 { font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 10px; }
+.modal p { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 8px; }
+.modal .warn { color: #92400E; background: #FFFBEB; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }

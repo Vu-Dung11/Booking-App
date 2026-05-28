@@ -1,0 +1,122 @@
+<div class="back-link">
+  <a routerLink="/admin/properties">‹ Quay lai danh sach</a>
+</div>
+
+@if (isLoading()) {
+  <div class="loading-state">Dang tai...</div>
+} @else if (detail(); as d) {
+  <div class="hero" appAnimateOnScroll>
+    <div class="hero-body">
+      <h1>{{ d.name }}</h1>
+      <div class="hero-meta">
+        @if (d.isActive) {
+          <span class="status-badge active">Active</span>
+        } @else {
+          <span class="status-badge inactive">Hidden</span>
+        }
+        <span>{{ d.address }}, {{ d.city }}, {{ d.country }}</span>
+      </div>
+      <div class="hero-host">
+        <strong>Host:</strong> {{ d.hostFullName }} ({{ d.hostEmail }})
+        @if (d.hostPhone) { · {{ d.hostPhone }} }
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="btn-secondary" (click)="openToggle()">
+        {{ d.isActive ? 'An homestay' : 'Hien homestay' }}
+      </button>
+      @if (d.isActive) {
+        <button class="btn-danger" (click)="openDelete()">Xoa</button>
+      }
+    </div>
+  </div>
+
+  <div class="stats-row stagger-children">
+    <div class="stat-block" appAnimateOnScroll>
+      <span class="lbl">Rating trung binh</span>
+      <span class="val">⭐ {{ d.averageRating ? d.averageRating.toFixed(1) : '—' }}</span>
+    </div>
+    <div class="stat-block" appAnimateOnScroll>
+      <span class="lbl">Tong reviews</span>
+      <span class="val">{{ d.totalReviews }}</span>
+    </div>
+    <div class="stat-block" appAnimateOnScroll>
+      <span class="lbl">Tong bookings</span>
+      <span class="val">{{ d.totalBookings }}</span>
+    </div>
+    <div class="stat-block" appAnimateOnScroll>
+      <span class="lbl">So loai phong</span>
+      <span class="val">{{ d.rooms.length }}</span>
+    </div>
+  </div>
+
+  @if (d.description) {
+    <section class="section" appAnimateOnScroll>
+      <h2>Mo ta</h2>
+      <p class="description">{{ d.description }}</p>
+    </section>
+  }
+
+  @if (d.images && d.images.length > 0) {
+    <section class="section" appAnimateOnScroll>
+      <h2>Gallery</h2>
+      <div class="gallery">
+        @for (img of d.images; track img) {
+          <img [src]="img" alt="property image" />
+        }
+      </div>
+    </section>
+  }
+
+  <section class="section" appAnimateOnScroll>
+    <h2>Danh sach phong ({{ d.rooms.length }})</h2>
+    @if (d.rooms.length === 0) {
+      <p class="empty">Chua co phong nao</p>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Loai phong</th>
+              <th>Capacity</th>
+              <th>Gia co ban</th>
+              <th>So luong</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of d.rooms; track r.id) {
+              <tr>
+                <td class="fw-600">{{ r.roomType }}</td>
+                <td>{{ r.capacity }} khach</td>
+                <td>{{ formatPrice(r.basePrice) }}</td>
+                <td>{{ r.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}
+
+@if (showConfirm() && detail(); as d) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ confirmMode() === 'delete' ? 'Xoa homestay' : (d.isActive ? 'An homestay' : 'Hien homestay') }}</h3>
+      <p>Homestay: <strong>{{ d.name }}</strong></p>
+      @if (confirmMode() === 'delete' || d.isActive) {
+        <p class="warn">Homestay se khong xuat hien trong tim kiem cong khai.</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button
+          [class]="confirmMode() === 'delete' ? 'btn-danger' : 'btn-primary'"
+          (click)="submitConfirm()"
+          [disabled]="isProcessing()"
+        >
+          {{ isProcessing() ? 'Dang xu ly...' : 'Xac nhan' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

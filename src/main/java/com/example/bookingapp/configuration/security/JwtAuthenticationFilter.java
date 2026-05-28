@@ -53,6 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Tìm user trong DB để đảm bảo user này vẫn còn tồn tại
                 userRepository.findByEmail(userEmail).ifPresent(user -> {
 
+                    // Tài khoản bị admin khoá thì không cấp quyền dù token còn hạn
+                    if (Boolean.FALSE.equals(user.getIsActive())) {
+                        return;
+                    }
+
                     // Kiểm tra token có hợp lệ không
                     if (jwtUtil.isTokenValid(jwt, user.getEmail())) {
 

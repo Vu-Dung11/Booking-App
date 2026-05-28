@@ -33,7 +33,14 @@ public enum ErrorCode {
     INVALID_DATE_RANGE(412, "Khoảng ngày không hợp lệ."),
     CHAT_SESSION_NOT_FOUND(512, "Không tìm thấy session chat"),
     GEMINI_API_ERROR(513, "Lỗi gọi Ollama API"),
-    CHAT_TOOL_EXECUTION_FAILED(514, "Lỗi thực thi function call");
+    CHAT_TOOL_EXECUTION_FAILED(514, "Lỗi thực thi function call"),
+    USER_ALREADY_LOCKED(515, "Tài khoản đã bị khoá"),
+    USER_ALREADY_ACTIVE(516, "Tài khoản đang hoạt động"),
+    CANNOT_LOCK_SELF(517, "Không thể tự khoá tài khoản admin của chính mình"),
+    REVIEW_NOT_FOUND(518, "Không tìm thấy review"),
+    EMAIL_ALREADY_EXISTS(519, "Email đã được sử dụng"),
+    CANNOT_DELETE_SELF(520, "Không thể tự xoá tài khoản của chính mình"),
+    USER_HAS_RELATED_DATA(521, "Không thể xoá: tài khoản còn dữ liệu liên quan (homestay/đặt phòng/đánh giá). Hãy khoá tài khoản thay thế.");
 
     private final int code;
     private final String message;

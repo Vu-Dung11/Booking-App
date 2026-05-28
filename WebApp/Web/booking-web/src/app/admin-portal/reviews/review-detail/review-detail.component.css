@@ -1,0 +1,119 @@
+.back-link { margin-bottom: 16px; }
+.back-link a { color: var(--color-text-muted); font-size: 13px; font-weight: 500; }
+.back-link a:hover { color: var(--color-primary); }
+
+.loading-state { padding: 60px; text-align: center; color: var(--color-text-muted); }
+
+.review-hero {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+
+.rating-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rating-stars { color: #F59E0B; font-size: 28px; letter-spacing: 2px; }
+.rating-text { font-size: 13px; color: var(--color-text-muted); font-weight: 600; }
+
+.meta-block { flex: 1; min-width: 200px; }
+.meta-row { display: flex; gap: 12px; font-size: 13px; margin-bottom: 6px; }
+.meta-row .lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  min-width: 100px;
+}
+
+.action-block { display: flex; gap: 10px; }
+
+.comment-section { background: var(--color-bg); }
+
+.section {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.section h2 { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 14px; }
+.comment { font-size: 15px; color: var(--color-text-secondary); line-height: 1.7; white-space: pre-wrap; }
+.empty { font-style: italic; color: var(--color-text-muted); }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.user-cell.big { display: flex; gap: 14px; align-items: flex-start; }
+.avatar-circle {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #34D399, #10B981);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 18px;
+  flex-shrink: 0;
+}
+.user-cell .name { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 4px; }
+.user-cell .sub { font-size: 12px; color: var(--color-text-muted); margin-bottom: 2px; }
+
+.info-block .name { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 4px; }
+.info-block .sub { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; }
+.info-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--color-border); }
+.info-row:last-child { border-bottom: none; }
+.info-row .lbl { color: var(--color-text-muted); font-weight: 600; }
+
+.link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.link:hover { text-decoration: underline; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-xl);
+}
+.modal h3 { font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 10px; }
+.modal p { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.modal .warn { color: #991B1B; background: #FEF2F2; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-top: 10px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: var(--font-family);
+  transition: all var(--transition-fast);
+}
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-secondary { background: transparent; color: var(--color-text-secondary); border-color: var(--color-border); }
+.btn-secondary:hover:not(:disabled) { background: var(--color-bg-secondary); }
+.btn-danger { background: #EF4444; color: white; }
+.btn-danger:hover:not(:disabled) { background: #DC2626; }

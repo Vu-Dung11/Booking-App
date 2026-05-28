@@ -58,6 +58,8 @@ public class SecurityConfiguration {
                         // Host portal: BẮT BUỘC role HOST (đặt TRƯỚC rule public GET /properties/**
                         // để Spring Security match path /host/** trước)
                         .requestMatchers("/api/v1/host/**").hasRole("HOST")
+                        // Admin portal: BẮT BUỘC role ADMIN
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/media/**").permitAll()

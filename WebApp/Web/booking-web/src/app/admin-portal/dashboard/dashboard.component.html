@@ -1,0 +1,132 @@
+<div class="page-header">
+  <h1 class="page-title">Tong quan he thong</h1>
+  <p class="page-subtitle">Bao cao tong hop hoat dong toan he thong BookingApp</p>
+</div>
+
+@if (isLoading()) {
+  <div class="loading-state">Dang tai du lieu...</div>
+} @else if (stats(); as s) {
+  <div class="stats-grid stagger-children">
+    <div class="stat-card stat-primary" appAnimateOnScroll>
+      <div class="stat-label">Tong tai khoan</div>
+      <div class="stat-value">{{ formatNumber(s.totalUsers) }}</div>
+      <div class="stat-meta">
+        <span>{{ s.totalHosts }} HOST</span>
+        <span>·</span>
+        <span>{{ s.totalGuests }} GUEST</span>
+        <span>·</span>
+        <span>{{ s.totalAdmins }} ADMIN</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-info" appAnimateOnScroll>
+      <div class="stat-label">Homestays</div>
+      <div class="stat-value">{{ formatNumber(s.totalProperties) }}</div>
+      <div class="stat-meta">
+        <span class="ok">{{ s.activeProperties }} active</span>
+        <span>·</span>
+        <span class="danger">{{ s.inactiveProperties }} inactive</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-warning" appAnimateOnScroll>
+      <div class="stat-label">Tong don dat phong</div>
+      <div class="stat-value">{{ formatNumber(s.totalBookings) }}</div>
+      <div class="stat-meta">
+        <span class="ok">{{ s.confirmedBookings }} confirm</span>
+        <span>·</span>
+        <span>{{ s.pendingBookings }} pending</span>
+        <span>·</span>
+        <span class="danger">{{ s.cancelledBookings }} cancel</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-success" appAnimateOnScroll>
+      <div class="stat-label">Doanh thu tich luy</div>
+      <div class="stat-value sm">{{ formatPrice(s.totalRevenue) }}</div>
+      <div class="stat-meta">Booking CONFIRMED + COMPLETED</div>
+    </div>
+  </div>
+
+  <div class="alert-row stagger-children">
+    @if (s.lockedUsers > 0) {
+      <div class="alert alert-warning" appAnimateOnScroll>
+        <strong>{{ s.lockedUsers }}</strong> tai khoan dang bi khoa
+      </div>
+    }
+    @if (s.totalReviews > 0) {
+      <div class="alert alert-info" appAnimateOnScroll>
+        <strong>{{ s.totalReviews }}</strong> review trong he thong
+      </div>
+    }
+  </div>
+
+  @if (activities(); as a) {
+    <div class="activities-grid">
+      <div class="card" appAnimateOnScroll>
+        <div class="card-header">
+          <h3>User moi</h3>
+          <a routerLink="/admin/users" class="link-more">Xem tat ca</a>
+        </div>
+        <ul class="activity-list">
+          @for (u of a.recentUsers; track u.id) {
+            <li>
+              <a [routerLink]="['/admin/users', u.id]" class="activity-item">
+                <div class="activity-avatar">{{ (u.title || '?').charAt(0).toUpperCase() }}</div>
+                <div class="activity-body">
+                  <div class="activity-title">{{ u.title }}</div>
+                  <div class="activity-sub">{{ u.subtitle }}</div>
+                </div>
+              </a>
+            </li>
+          } @empty {
+            <li class="empty">Chua co user</li>
+          }
+        </ul>
+      </div>
+
+      <div class="card" appAnimateOnScroll>
+        <div class="card-header">
+          <h3>Booking moi</h3>
+        </div>
+        <ul class="activity-list">
+          @for (b of a.recentBookings; track b.id) {
+            <li>
+              <div class="activity-item">
+                <div class="activity-avatar pill">B</div>
+                <div class="activity-body">
+                  <div class="activity-title">{{ b.title }}</div>
+                  <div class="activity-sub">{{ b.subtitle }}</div>
+                </div>
+              </div>
+            </li>
+          } @empty {
+            <li class="empty">Chua co booking</li>
+          }
+        </ul>
+      </div>
+
+      <div class="card" appAnimateOnScroll>
+        <div class="card-header">
+          <h3>Review moi</h3>
+          <a routerLink="/admin/reviews" class="link-more">Xem tat ca</a>
+        </div>
+        <ul class="activity-list">
+          @for (r of a.recentReviews; track r.id) {
+            <li>
+              <a [routerLink]="['/admin/reviews', r.id]" class="activity-item">
+                <div class="activity-avatar pill yellow">R</div>
+                <div class="activity-body">
+                  <div class="activity-title">{{ r.title }}</div>
+                  <div class="activity-sub">{{ r.subtitle }}</div>
+                </div>
+              </a>
+            </li>
+          } @empty {
+            <li class="empty">Chua co review</li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+}

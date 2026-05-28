@@ -1,0 +1,89 @@
+<div class="layout" [class.sidebar-collapsed]="!sidebarOpen()">
+  @if (mobileMenuOpen()) {
+    <div class="mobile-overlay" (click)="closeMobileMenu()"></div>
+  }
+
+  <aside class="sidebar" [class.mobile-open]="mobileMenuOpen()">
+    <div class="sidebar-header">
+      <div class="logo-group">
+        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#A78BFA"/>
+          <path d="M10 16L15 11L20 16L15 21L10 16Z" fill="white" opacity="0.6"/>
+          <path d="M13 16L18 11L23 16L18 21L13 16Z" fill="white"/>
+        </svg>
+        @if (sidebarOpen() || mobileMenuOpen()) {
+          <span class="logo-text">Cong Quan Tri</span>
+          <span class="admin-chip">ADMIN</span>
+        }
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          class="nav-item"
+          (click)="closeMobileMenu()"
+          [title]="item.label"
+        >
+          <span class="nav-icon">
+            @switch (item.icon) {
+              @case ('dashboard') {
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              }
+              @case ('user') {
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.2386 6.68629 12 10 12C13.3137 12 16 14.2386 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              }
+              @case ('property') {
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 17V8.5L10 3L17 8.5V17H12V12H8V17H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              }
+              @case ('review') {
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5C3 3.89543 3.89543 3 5 3H15C16.1046 3 17 3.89543 17 5V12C17 13.1046 16.1046 14 15 14H8L4 17V14H5C3.89543 14 3 13.1046 3 12V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              }
+            }
+          </span>
+          @if (sidebarOpen() || mobileMenuOpen()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      @if (sidebarOpen() || mobileMenuOpen()) {
+        <div class="user-info">
+          <div class="user-avatar">{{ getUserInitial() }}</div>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser()?.sub || 'Admin' }}</span>
+            <span class="user-role">{{ currentUser()?.role || 'ADMIN' }}</span>
+          </div>
+        </div>
+      }
+      <button class="btn-logout" (click)="logout()" title="Dang xuat">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M6.75 15.75H3.75C3.15 15.75 2.625 15.225 2.625 14.625V3.375C2.625 2.775 3.15 2.25 3.75 2.25H6.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12.75L15.75 9L12 5.25M6.75 9H15.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        @if (sidebarOpen() || mobileMenuOpen()) {
+          <span>Dang xuat</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="top-header">
+      <button class="btn-hamburger" (click)="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <div class="header-right">
+        <span class="role-badge-header">ADMIN PORTAL</span>
+        <div class="header-avatar" (click)="logout()">
+          {{ getUserInitial() }}
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -51,11 +51,46 @@ export const routes: Routes = [
       }
     ]
   },
-  // Backwards-compatible: /admin/* được redirect sang /host/* để link cũ không vỡ
+  // Admin portal — quan tri vien he thong
   {
     path: 'admin',
-    redirectTo: 'host',
-    pathMatch: 'prefix'
+    loadComponent: () => import('./admin-portal/admin-layout/admin-portal-layout.component').then(m => m.AdminPortalLayoutComponent),
+    canActivate: [authGuard, roleGuard('ADMIN')],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./admin-portal/dashboard/dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./admin-portal/users/user-list/user-list.component').then(m => m.AdminUserListComponent)
+      },
+      {
+        path: 'users/:id',
+        loadComponent: () => import('./admin-portal/users/user-detail/user-detail.component').then(m => m.AdminUserDetailComponent)
+      },
+      {
+        path: 'properties',
+        loadComponent: () => import('./admin-portal/properties/property-list/property-list.component').then(m => m.AdminPropertyListComponent)
+      },
+      {
+        path: 'properties/:id',
+        loadComponent: () => import('./admin-portal/properties/property-detail/property-detail.component').then(m => m.AdminPropertyDetailComponent)
+      },
+      {
+        path: 'reviews',
+        loadComponent: () => import('./admin-portal/reviews/review-list/review-list.component').then(m => m.AdminReviewListComponent)
+      },
+      {
+        path: 'reviews/:id',
+        loadComponent: () => import('./admin-portal/reviews/review-detail/review-detail.component').then(m => m.AdminReviewDetailComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
   },
   {
     path: '',

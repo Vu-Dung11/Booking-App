@@ -5,7 +5,9 @@
       "Bash(npx ng:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4200/login)",
       "Bash(npx --yes playwright install chromium)",
-      "WebFetch(domain:docs.ollama.com)"
+      "WebFetch(domain:docs.ollama.com)",
+      "PowerShell(./mvnw.cmd -q compile 2>&1)",
+      "PowerShell(npm --prefix \"WebApp/Web/booking-web\" run build 2>&1)"
     ]
   }
 }

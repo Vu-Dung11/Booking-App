@@ -24,8 +24,8 @@ export interface DecodedToken {
   exp: number;
 }
 
-/** Chỉ HOST mới được dùng portal này. */
-export const ALLOWED_PORTAL_ROLES: UserRole[] = ['HOST'];
+/** Portal nay phuc vu HOST va ADMIN. */
+export const ALLOWED_PORTAL_ROLES: UserRole[] = ['HOST', 'ADMIN'];
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -53,6 +53,7 @@ export class AuthService {
   }
 
   isHost = computed(() => this.currentUser()?.role === 'HOST');
+  isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
 
   get token(): string | null {
     return this.tokenSignal();
@@ -74,7 +75,7 @@ export class AuthService {
           this.clearToken();
           // Mutate response để component nhận biết
           res.code = 403;
-          res.message = 'Tài khoản này không phải chủ homestay (HOST). Truy cập bị từ chối.';
+          res.message = 'Tài khoản không có quyền truy cập portal này.';
           res.data = null as any;
           return;
         }

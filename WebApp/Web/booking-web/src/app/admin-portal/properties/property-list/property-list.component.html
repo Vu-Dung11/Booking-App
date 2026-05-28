@@ -1,0 +1,110 @@
+<div class="page-header">
+  <h1 class="page-title">Quan ly homestays</h1>
+  <p class="page-subtitle">Toan bo property cua moi host trong he thong</p>
+</div>
+
+<div class="card toolbar-card" appAnimateOnScroll>
+  <div class="filters">
+    <input
+      class="filter-input"
+      type="text"
+      placeholder="Tim ten homestay / dia chi..."
+      [(ngModel)]="keyword"
+      (keyup.enter)="onFilterChange()"
+    />
+    <input
+      class="filter-input small"
+      type="text"
+      placeholder="Thanh pho"
+      [(ngModel)]="cityFilter"
+      (keyup.enter)="onFilterChange()"
+    />
+    <select class="filter-select" [(ngModel)]="selectedActive" (change)="onFilterChange()">
+      <option [ngValue]="'ALL'">Tat ca trang thai</option>
+      <option [ngValue]="true">Dang hoat dong</option>
+      <option [ngValue]="false">Da an</option>
+    </select>
+    <button class="btn-secondary" (click)="onFilterChange()">Loc</button>
+    <span class="total-label">{{ totalElements() }} homestay</span>
+  </div>
+</div>
+
+@if (isLoading()) {
+  <div class="loading-state">Dang tai...</div>
+} @else if (properties().length === 0) {
+  <div class="loading-state">Khong co homestay nao</div>
+} @else {
+  <div class="grid stagger-children">
+    @for (p of properties(); track p.id) {
+      <div class="property-card" appAnimateOnScroll>
+        <div class="thumb" [style.backgroundImage]="p.thumbnailUrl ? 'url(' + p.thumbnailUrl + ')' : null">
+          @if (!p.thumbnailUrl) {
+            <span class="thumb-fallback">{{ p.name.charAt(0).toUpperCase() }}</span>
+          }
+          @if (p.isActive) {
+            <span class="status-badge active">Active</span>
+          } @else {
+            <span class="status-badge inactive">Hidden</span>
+          }
+        </div>
+        <div class="body">
+          <h3 [routerLink]="['/admin/properties', p.id]">{{ p.name }}</h3>
+          <div class="meta">{{ p.address }}, {{ p.city }}</div>
+          <div class="host-meta">Host: <strong>{{ p.hostFullName }}</strong> · {{ p.hostEmail }}</div>
+          <div class="stats-line">
+            <span>⭐ {{ formatRating(p.averageRating) }} ({{ p.reviewCount || 0 }})</span>
+            <span>🛏 {{ p.roomCount || 0 }} room</span>
+          </div>
+          <div class="actions">
+            <a [routerLink]="['/admin/properties', p.id]" class="btn-action ghost">Chi tiet</a>
+            <button class="btn-action warn" (click)="openToggle(p)">
+              {{ p.isActive ? 'An' : 'Hien' }}
+            </button>
+            @if (p.isActive) {
+              <button class="btn-action danger" (click)="openDelete(p)">Xoa</button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination">
+      <button class="page-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 0">‹</button>
+      @for (p of pages; track p) {
+        <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+      }
+      <button class="page-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">›</button>
+    </div>
+  }
+}
+
+@if (showConfirm() && actionTarget(); as p) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>
+        {{ confirmMode() === 'toggle'
+            ? (p.isActive ? 'An homestay' : 'Hien homestay')
+            : 'Xoa homestay (soft delete)' }}
+      </h3>
+      <p>Homestay: <strong>{{ p.name }}</strong></p>
+      <p class="sub">Host: {{ p.hostEmail }}</p>
+      @if (confirmMode() === 'delete') {
+        <p class="warn">Homestay se bi an khoi he thong nhung lich su booking/review van duoc giu lai.</p>
+      } @else if (p.isActive) {
+        <p class="warn">Homestay se bien mat khoi tim kiem cong khai.</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button
+          [class]="confirmMode() === 'delete' ? 'btn-danger' : 'btn-primary'"
+          (click)="submitConfirm()"
+          [disabled]="isProcessing()"
+        >
+          {{ isProcessing() ? 'Dang xu ly...' : 'Xac nhan' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

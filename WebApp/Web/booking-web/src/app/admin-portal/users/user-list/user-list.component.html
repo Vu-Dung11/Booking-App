@@ -1,0 +1,208 @@
+<div class="page-header">
+  <h1 class="page-title">Quan ly tai khoan</h1>
+  <p class="page-subtitle">Xem, tim kiem va khoa/mo khoa tai khoan trong he thong</p>
+</div>
+
+<div class="card" appAnimateOnScroll>
+  <div class="card-toolbar">
+    <div class="filters">
+      <input
+        class="filter-input"
+        type="text"
+        placeholder="Tim email hoac ho ten..."
+        [(ngModel)]="keyword"
+        (keyup.enter)="onFilterChange()"
+      />
+      <select class="filter-select" [(ngModel)]="selectedRole" (change)="onFilterChange()">
+        <option value="ALL">Tat ca role</option>
+        <option value="ADMIN">ADMIN</option>
+        <option value="HOST">HOST</option>
+        <option value="GUEST">GUEST</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="selectedActive" (change)="onFilterChange()">
+        <option [ngValue]="'ALL'">Tat ca trang thai</option>
+        <option [ngValue]="true">Dang hoat dong</option>
+        <option [ngValue]="false">Da khoa</option>
+      </select>
+      <button class="btn-secondary" (click)="onFilterChange()">Loc</button>
+    </div>
+    <div class="toolbar-actions">
+      <span class="total-label">{{ totalElements() }} user</span>
+      <button class="btn-primary" (click)="openCreate()">+ Them tai khoan</button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Dang tai...</div>
+  } @else if (users().length === 0) {
+    <div class="loading-state">Khong tim thay user nao</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>SDT</th>
+            <th>Role</th>
+            <th>Trang thai</th>
+            <th class="text-right">Hanh dong</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of users(); track u.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar-circle">{{ getInitial(u.fullName) }}</div>
+                  <span class="fw-600">{{ u.fullName || '(chua dat ten)' }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ u.email }}</td>
+              <td class="text-muted">{{ u.phoneNumber || '—' }}</td>
+              <td><span class="role-badge" [ngClass]="getRoleClass(u.role)">{{ u.role }}</span></td>
+              <td>
+                @if (u.isActive) {
+                  <span class="status-badge active">Active</span>
+                } @else {
+                  <span class="status-badge locked">Locked</span>
+                }
+              </td>
+              <td class="text-right">
+                <a [routerLink]="['/admin/users', u.id]" class="btn-action ghost">Chi tiet</a>
+                <button class="btn-action ghost" (click)="openEdit(u)">Sua</button>
+                @if (u.isActive) {
+                  <button class="btn-action danger" (click)="openLock(u)">Khoa</button>
+                } @else {
+                  <button class="btn-action primary" (click)="openUnlock(u)">Mo khoa</button>
+                }
+                <button class="btn-action danger" (click)="openDelete(u)">Xoa</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="page-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 0">‹</button>
+        @for (p of pages; track p) {
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+        }
+        <button class="page-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">›</button>
+      </div>
+    }
+  }
+</div>
+
+@if (showConfirm() && actionTarget(); as u) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ actionMode() === 'lock' ? 'Khoa tai khoan' : 'Mo khoa tai khoan' }}</h3>
+      <p>
+        Ban co chac muon
+        {{ actionMode() === 'lock' ? 'khoa' : 'mo khoa' }}
+        tai khoan <strong>{{ u.email }}</strong>?
+      </p>
+      @if (actionMode() === 'lock') {
+        <p class="warn">User nay se khong the dang nhap sau khi bi khoa.</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button
+          [class]="actionMode() === 'lock' ? 'btn-danger' : 'btn-primary'"
+          (click)="submitConfirm()"
+          [disabled]="isProcessing()"
+        >
+          {{ isProcessing() ? 'Dang xu ly...' : (actionMode() === 'lock' ? 'Khoa' : 'Mo khoa') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="closeForm()">
+    <div class="modal modal-form" (click)="$event.stopPropagation()">
+      <h3>{{ formMode() === 'create' ? 'Them tai khoan moi' : 'Sua tai khoan' }}</h3>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Email</span>
+          <input
+            type="email"
+            class="form-input"
+            [(ngModel)]="form.email"
+            [disabled]="formMode() === 'edit'"
+            placeholder="user@example.com" />
+        </label>
+
+        @if (formMode() === 'create') {
+          <label class="form-field">
+            <span>Mat khau</span>
+            <input
+              type="password"
+              class="form-input"
+              [(ngModel)]="form.password"
+              placeholder="Toi thieu 6 ky tu" />
+          </label>
+        }
+
+        <label class="form-field">
+          <span>Ho ten</span>
+          <input
+            type="text"
+            class="form-input"
+            [(ngModel)]="form.fullName"
+            placeholder="Nguyen Van A" />
+        </label>
+
+        <label class="form-field">
+          <span>So dien thoai</span>
+          <input
+            type="tel"
+            class="form-input"
+            [(ngModel)]="form.phoneNumber"
+            placeholder="0901234567" />
+        </label>
+
+        <label class="form-field">
+          <span>Role</span>
+          <select class="form-input" [(ngModel)]="form.role">
+            <option value="ADMIN">ADMIN</option>
+            <option value="HOST">HOST</option>
+            <option value="GUEST">GUEST</option>
+          </select>
+        </label>
+      </div>
+
+      @if (formError(); as err) {
+        <p class="warn">{{ err }}</p>
+      }
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeForm()" [disabled]="isSubmittingForm()">Huy</button>
+        <button class="btn-primary" (click)="submitForm()" [disabled]="isSubmittingForm()">
+          {{ isSubmittingForm() ? 'Dang luu...' : (formMode() === 'create' ? 'Tao tai khoan' : 'Luu thay doi') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDelete() && deleteTarget(); as u) {
+  <div class="modal-overlay" (click)="closeDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Xoa tai khoan</h3>
+      <p>Ban co chac muon <strong>xoa vinh vien</strong> tai khoan <strong>{{ u.email }}</strong>?</p>
+      <p class="warn">Hanh dong nay khong the hoan tac. Neu user con homestay / dat phong / danh gia, he thong se chan xoa — hay khoa tai khoan thay vi xoa.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeDelete()" [disabled]="isDeleting()">Huy</button>
+        <button class="btn-danger" (click)="submitDelete()" [disabled]="isDeleting()">
+          {{ isDeleting() ? 'Dang xoa...' : 'Xoa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

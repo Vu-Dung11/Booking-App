@@ -1,0 +1,82 @@
+<div class="back-link">
+  <a routerLink="/admin/users">‹ Quay lai danh sach</a>
+</div>
+
+@if (isLoading()) {
+  <div class="loading-state">Dang tai...</div>
+} @else if (user(); as u) {
+  <div class="card profile-card" appAnimateOnScroll>
+    <div class="profile-head">
+      <div class="big-avatar">{{ getInitial(u.fullName) }}</div>
+      <div class="profile-info">
+        <h2>{{ u.fullName || '(chua dat ten)' }}</h2>
+        <div class="profile-meta">
+          <span class="role-badge" [ngClass]="getRoleClass(u.role)">{{ u.role }}</span>
+          @if (u.isActive) {
+            <span class="status-badge active">Active</span>
+          } @else {
+            <span class="status-badge locked">Locked</span>
+          }
+        </div>
+        <div class="profile-contact">
+          <span><strong>Email:</strong> {{ u.email }}</span>
+          <span><strong>SDT:</strong> {{ u.phoneNumber || '—' }}</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        @if (u.isActive) {
+          <button class="btn-danger" (click)="openLock()">Khoa tai khoan</button>
+        } @else {
+          <button class="btn-primary" (click)="openUnlock()">Mo khoa</button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row" appAnimateOnScroll>
+    @if (u.role === 'HOST') {
+      <div class="stat-block">
+        <span class="lbl">Homestays so huu</span>
+        <span class="val">{{ u.propertyCount || 0 }}</span>
+      </div>
+    }
+    @if (u.role === 'GUEST') {
+      <div class="stat-block">
+        <span class="lbl">Don dat phong</span>
+        <span class="val">{{ u.bookingCount || 0 }}</span>
+      </div>
+      <div class="stat-block">
+        <span class="lbl">Review da viet</span>
+        <span class="val">{{ u.reviewCount || 0 }}</span>
+      </div>
+    }
+    @if (u.role === 'ADMIN') {
+      <div class="stat-block">
+        <span class="lbl">User ID</span>
+        <span class="val">#{{ u.id }}</span>
+      </div>
+    }
+  </div>
+}
+
+@if (showConfirm() && user(); as u) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ actionMode() === 'lock' ? 'Khoa tai khoan' : 'Mo khoa tai khoan' }}</h3>
+      <p>Tai khoan: <strong>{{ u.email }}</strong></p>
+      @if (actionMode() === 'lock') {
+        <p class="warn">User nay se khong the dang nhap sau khi bi khoa.</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button
+          [class]="actionMode() === 'lock' ? 'btn-danger' : 'btn-primary'"
+          (click)="submitConfirm()"
+          [disabled]="isProcessing()"
+        >
+          {{ isProcessing() ? 'Dang xu ly...' : (actionMode() === 'lock' ? 'Khoa' : 'Mo khoa') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

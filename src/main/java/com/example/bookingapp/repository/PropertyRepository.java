@@ -48,6 +48,25 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Query("SELECT DISTINCT p.city FROM Property p WHERE p.isActive = true ORDER BY p.city")
     List<String> findDistinctActiveCities();
 
+    // ===== ADMIN QUERIES =====
+
+    @Query("""
+        SELECT p FROM Property p
+        WHERE (:city IS NULL OR LOWER(p.city) = LOWER(:city))
+          AND (:hostId IS NULL OR p.host.id = :hostId)
+          AND (:isActive IS NULL OR p.isActive = :isActive)
+          AND (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(p.address) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        ORDER BY p.id DESC
+    """)
+    Page<Property> searchForAdmin(@Param("city") String city,
+                                  @Param("hostId") Long hostId,
+                                  @Param("isActive") Boolean isActive,
+                                  @Param("keyword") String keyword,
+                                  Pageable pageable);
+
+    long countByIsActive(Boolean isActive);
+
     @Query("""
         SELECT new com.example.bookingapp.dto.PropertySummaryResponse(
             p.id, p.name, p.address, p.city,

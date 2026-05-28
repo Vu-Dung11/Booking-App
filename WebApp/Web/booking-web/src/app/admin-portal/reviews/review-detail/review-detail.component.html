@@ -1,0 +1,88 @@
+<div class="back-link">
+  <a routerLink="/admin/reviews">‹ Quay lai danh sach</a>
+</div>
+
+@if (isLoading()) {
+  <div class="loading-state">Dang tai...</div>
+} @else if (detail(); as d) {
+  <div class="review-hero" appAnimateOnScroll>
+    <div class="rating-block">
+      <div class="rating-stars">{{ stars(d.rating) }}</div>
+      <div class="rating-text">{{ d.rating }}/5</div>
+    </div>
+    <div class="meta-block">
+      <div class="meta-row">
+        <span class="lbl">Review ID</span>
+        <span>#{{ d.id }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="lbl">Ngay viet</span>
+        <span>{{ formatDate(d.createdAt) }}</span>
+      </div>
+    </div>
+    <div class="action-block">
+      <button class="btn-danger" (click)="openDelete()">Xoa review</button>
+    </div>
+  </div>
+
+  <section class="section comment-section" appAnimateOnScroll>
+    <h2>Noi dung review</h2>
+    @if (d.comment) {
+      <p class="comment">{{ d.comment }}</p>
+    } @else {
+      <p class="empty">(Review khong co binh luan)</p>
+    }
+  </section>
+
+  <div class="info-grid">
+    <section class="section" appAnimateOnScroll>
+      <h2>Guest</h2>
+      <div class="user-cell big">
+        <div class="avatar-circle">{{ getInitial(d.guestFullName) }}</div>
+        <div>
+          <div class="name">{{ d.guestFullName || '(no name)' }}</div>
+          <div class="sub">{{ d.guestEmail }}</div>
+          @if (d.guestPhone) {
+            <div class="sub">SDT: {{ d.guestPhone }}</div>
+          }
+          <a [routerLink]="['/admin/users', d.guestId]" class="link">Xem profile</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" appAnimateOnScroll>
+      <h2>Homestay</h2>
+      <div class="info-block">
+        <div class="name">{{ d.propertyName }}</div>
+        <div class="sub">{{ d.propertyAddress }}, {{ d.propertyCity }}</div>
+        <a [routerLink]="['/admin/properties', d.propertyId]" class="link">Xem homestay</a>
+      </div>
+    </section>
+
+    <section class="section" appAnimateOnScroll>
+      <h2>Booking lien quan</h2>
+      <div class="info-block">
+        <div class="info-row"><span class="lbl">Booking ID</span><span>#{{ d.bookingId }}</span></div>
+        <div class="info-row"><span class="lbl">Check-in</span><span>{{ formatDateShort(d.checkInDate) }}</span></div>
+        <div class="info-row"><span class="lbl">Check-out</span><span>{{ formatDateShort(d.checkOutDate) }}</span></div>
+        <div class="info-row"><span class="lbl">Tong tien</span><span>{{ formatPrice(d.totalPrice) }}</span></div>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showConfirm() && detail(); as d) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Xoa review</h3>
+      <p>Review <strong>#{{ d.id }}</strong> ({{ d.rating }}/5 sao) cua <strong>{{ d.guestEmail }}</strong>.</p>
+      <p class="warn">Hanh dong nay khong the hoan tac.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button class="btn-danger" (click)="submitDelete()" [disabled]="isProcessing()">
+          {{ isProcessing() ? 'Dang xoa...' : 'Xoa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.route.snapshot.queryParamMap.get('reason') === 'forbidden') {
-      this.error.set('Phien dang nhap khong hop le. Vui long dang nhap bang tai khoan chu homestay (HOST).');
+      this.error.set('Phien dang nhap khong hop le. Vui long dang nhap bang tai khoan duoc cap quyen.');
     }
   }
 
@@ -40,7 +40,12 @@ export class LoginComponent implements OnInit {
       next: (res) => {
         this.isLoading.set(false);
         if (res.code === 0) {
-          this.router.navigate(['/host/dashboard']);
+          const role = this.authService.currentUser()?.role;
+          if (role === 'ADMIN') {
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            this.router.navigate(['/host/dashboard']);
+          }
         } else {
           this.error.set(res.message);
         }

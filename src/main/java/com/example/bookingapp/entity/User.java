@@ -38,6 +38,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     public enum Role {
         ADMIN, GUEST, HOST
     }

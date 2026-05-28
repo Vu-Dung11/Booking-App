@@ -59,4 +59,22 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                            com.example.bookingapp.entity.Booking.BookingStatus.COMPLETED)
     """)
     java.math.BigDecimal sumRevenueByHostId(@org.springframework.data.repository.query.Param("hostId") Long hostId);
+
+    // ===== ADMIN QUERIES =====
+
+    long countByGuest_Id(Long guestId);
+
+    long countByStatus(Booking.BookingStatus status);
+
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT COALESCE(SUM(b.totalPrice), 0)
+        FROM Booking b
+        WHERE b.status IN (com.example.bookingapp.entity.Booking.BookingStatus.CONFIRMED,
+                           com.example.bookingapp.entity.Booking.BookingStatus.COMPLETED)
+    """)
+    java.math.BigDecimal sumTotalRevenue();
+
+    Page<Booking> findByRoom_Property_Id(Long propertyId, Pageable pageable);
+
+    Page<Booking> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

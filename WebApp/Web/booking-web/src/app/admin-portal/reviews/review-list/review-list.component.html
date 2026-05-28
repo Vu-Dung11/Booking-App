@@ -1,0 +1,100 @@
+<div class="page-header">
+  <h1 class="page-title">Quan ly reviews</h1>
+  <p class="page-subtitle">Toan bo danh gia tu khach hang trong he thong</p>
+</div>
+
+<div class="card" appAnimateOnScroll>
+  <div class="card-toolbar">
+    <div class="filters">
+      <input
+        class="filter-input"
+        type="text"
+        placeholder="Tim trong noi dung review..."
+        [(ngModel)]="keyword"
+        (keyup.enter)="onFilterChange()"
+      />
+      <select class="filter-select" [(ngModel)]="selectedRating" (change)="onFilterChange()">
+        <option [ngValue]="'ALL'">Tat ca rating</option>
+        <option [ngValue]="5">5 sao</option>
+        <option [ngValue]="4">4 sao</option>
+        <option [ngValue]="3">3 sao</option>
+        <option [ngValue]="2">2 sao</option>
+        <option [ngValue]="1">1 sao</option>
+      </select>
+      <button class="btn-secondary" (click)="onFilterChange()">Loc</button>
+    </div>
+    <span class="total-label">{{ totalElements() }} review</span>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">Dang tai...</div>
+  } @else if (reviews().length === 0) {
+    <div class="loading-state">Khong tim thay review nao</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Guest</th>
+            <th>Rating</th>
+            <th>Noi dung</th>
+            <th>Homestay</th>
+            <th>Ngay</th>
+            <th class="text-right">Hanh dong</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of reviews(); track r.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar-circle">{{ getInitial(r.guestFullName) }}</div>
+                  <div>
+                    <div class="fw-600">{{ r.guestFullName || '(no name)' }}</div>
+                    <div class="text-muted small">{{ r.guestEmail }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="rating">{{ stars(r.rating) }}</span></td>
+              <td class="comment-cell">{{ truncate(r.comment) }}</td>
+              <td class="text-muted">{{ r.propertyName }}</td>
+              <td class="text-muted">{{ formatDate(r.createdAt) }}</td>
+              <td class="text-right">
+                <a [routerLink]="['/admin/reviews', r.id]" class="btn-action ghost">Chi tiet</a>
+                <button class="btn-action danger" (click)="openDelete(r)">Xoa</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="page-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 0">‹</button>
+        @for (p of pages; track p) {
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p + 1 }}</button>
+        }
+        <button class="page-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">›</button>
+      </div>
+    }
+  }
+</div>
+
+@if (showConfirm() && actionTarget(); as r) {
+  <div class="modal-overlay" (click)="closeConfirm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Xoa review</h3>
+      <p>Guest: <strong>{{ r.guestEmail }}</strong></p>
+      <p>Homestay: <strong>{{ r.propertyName }}</strong></p>
+      <p>Rating: <span class="rating">{{ stars(r.rating) }}</span></p>
+      <p class="warn">Review se bi xoa vinh vien khoi he thong. Hanh dong nay khong the hoan tac.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeConfirm()" [disabled]="isProcessing()">Huy</button>
+        <button class="btn-danger" (click)="submitDelete()" [disabled]="isProcessing()">
+          {{ isProcessing() ? 'Dang xoa...' : 'Xoa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
