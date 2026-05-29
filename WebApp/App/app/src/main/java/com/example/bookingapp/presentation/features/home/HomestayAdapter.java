@@ -92,8 +92,8 @@ public class HomestayAdapter extends RecyclerView.Adapter<HomestayAdapter.ViewHo
 
         Glide.with(holder.itemView)
                 .load(homestay.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .error(android.R.drawable.ic_menu_gallery)
+                .placeholder(R.drawable.loadingscreen)
+                .error(R.drawable.loadingscreen)
                 .centerCrop()
                 .into(holder.binding.ivHomestay);
 

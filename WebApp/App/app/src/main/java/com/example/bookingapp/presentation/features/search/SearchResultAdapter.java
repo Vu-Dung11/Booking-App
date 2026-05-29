@@ -56,7 +56,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         h.tvRoomCount.setText("Còn " + n + " loại phòng");
         h.tvPrice.setText("Từ " + Formatter.currency(it.getMinPrice()) + "/đêm");
 
-        h.ivThumbnail.setImageResource(android.R.drawable.ic_menu_gallery);
+        h.ivThumbnail.setImageResource(R.drawable.loadingscreen);
 
         boolean isFav = it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId());
         h.ivFavorite.setImageResource(isFav

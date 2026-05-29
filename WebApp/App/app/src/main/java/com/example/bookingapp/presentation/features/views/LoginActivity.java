@@ -21,6 +21,18 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Auto-login: nếu đã có token lưu trong SharedPreferences → bỏ qua màn login,
+        // vào thẳng MainActivity. Nếu token hết hạn / không hợp lệ, AuthInterceptor sẽ
+        // nhận 401 từ backend và (sau này) trigger logout về lại đây.
+        String savedToken = getSharedPreferences("auth", MODE_PRIVATE)
+                .getString("token", null);
+        if (savedToken != null && !savedToken.isEmpty()) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
+        }
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

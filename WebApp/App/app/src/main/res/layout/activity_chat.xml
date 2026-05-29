@@ -65,8 +65,8 @@
             android:paddingHorizontal="16dp"
             android:paddingVertical="12dp"
             android:maxLines="4"
-            android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine"
-            android:imeOptions="actionSend"
+            android:inputType="textCapSentences|textMultiLine"
+            android:imeOptions="actionSend|flagNoExtractUi"
             android:autofillHints="" />
 
         <ImageButton

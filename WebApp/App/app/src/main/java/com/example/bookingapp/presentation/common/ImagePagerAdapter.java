@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.bookingapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,8 @@ public class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdapter.VH
         String url = urls.get(position);
         Glide.with(h.itemView)
                 .load(url)
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .error(android.R.drawable.ic_menu_gallery)
+                .placeholder(R.drawable.loadingscreen)
+                .error(R.drawable.loadingscreen)
                 .centerCrop()
                 .into((ImageView) h.itemView);
     }
