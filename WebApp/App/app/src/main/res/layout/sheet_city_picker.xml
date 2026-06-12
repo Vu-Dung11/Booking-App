@@ -38,7 +38,7 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxStrokeColor="?attr/colorPrimary"
-        android:hint="Bạn muốn đi đâu?">
+        >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearchCity"

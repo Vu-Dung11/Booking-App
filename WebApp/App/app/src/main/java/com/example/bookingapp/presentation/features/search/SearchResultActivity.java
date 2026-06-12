@@ -72,6 +72,8 @@ public class SearchResultActivity extends AppCompatActivity {
                     item.getPropertyName(),
                     item.getThumbnailUrl(),
                     item.getCity(),
+                    item.getMinPrice() != null ? item.getMinPrice().doubleValue() : null,
+                    null,
                     isAdded -> binding.getRoot().post(() ->
                             Toast.makeText(this,
                                     isAdded ? "Đã lưu" : "Đã bỏ yêu thích",

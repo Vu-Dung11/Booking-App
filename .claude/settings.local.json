@@ -7,7 +7,9 @@
       "Bash(npx --yes playwright install chromium)",
       "WebFetch(domain:docs.ollama.com)",
       "PowerShell(./mvnw.cmd -q compile 2>&1)",
-      "PowerShell(npm --prefix \"WebApp/Web/booking-web\" run build 2>&1)"
+      "PowerShell(npm --prefix \"WebApp/Web/booking-web\" run build 2>&1)",
+      "Bash(Get-ChildItem -Path \"d:\\\\DATN\\\\bookingapp\\\\src\\\\main\\\\java\\\\com\\\\example\\\\bookingapp\" -Recurse -Filter \"*Jwt*\")",
+      "Bash(Select-Object FullName)"
     ]
   }
 }

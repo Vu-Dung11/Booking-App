@@ -70,16 +70,38 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
                         getBinding().layoutError.setVisibility(View.GONE);
                     }
                     break;
+//                case ERROR:
+//                    getBinding().progress.setVisibility(View.GONE);
+//                    String msg = res.message != null ? res.message : "";
+//                    if (msg.contains("401")) {
+//                        getBinding().layoutError.setVisibility(View.VISIBLE);
+//                        getBinding().layoutContent.setVisibility(View.GONE);
+//                    } else {
+//                        Snackbar.make(getBinding().getRoot(),
+//                                msg.isEmpty() ? "Lỗi tải thông tin" : msg,
+//                                Snackbar.LENGTH_LONG)
+//                                .setAction("Thử lại", v -> viewModel.loadMe())
+//                                .show();
+//                    }
+//                    break;
                 case ERROR:
                     getBinding().progress.setVisibility(View.GONE);
+
                     String msg = res.message != null ? res.message : "";
+
                     if (msg.contains("401")) {
                         getBinding().layoutError.setVisibility(View.VISIBLE);
                         getBinding().layoutContent.setVisibility(View.GONE);
+
                     } else {
-                        Snackbar.make(getBinding().getRoot(),
-                                msg.isEmpty() ? "Lỗi tải thông tin" : msg,
-                                Snackbar.LENGTH_LONG)
+                        // Mất mạng hoặc backend lỗi
+                        getBinding().layoutError.setVisibility(View.VISIBLE);
+                        getBinding().layoutContent.setVisibility(View.GONE);
+
+                        Snackbar.make(
+                                        getBinding().getRoot(),
+                                        msg.isEmpty() ? "Không thể kết nối máy chủ" : msg,
+                                        Snackbar.LENGTH_LONG)
                                 .setAction("Thử lại", v -> viewModel.loadMe())
                                 .show();
                     }

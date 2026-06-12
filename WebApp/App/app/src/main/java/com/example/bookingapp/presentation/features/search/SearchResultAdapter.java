@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.bookingapp.R;
 import com.example.bookingapp.core.utils.Formatter;
 import com.example.bookingapp.data.model.views.PropertySearchResponse;
@@ -56,7 +57,11 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         h.tvRoomCount.setText("Còn " + n + " loại phòng");
         h.tvPrice.setText("Từ " + Formatter.currency(it.getMinPrice()) + "/đêm");
 
-        h.ivThumbnail.setImageResource(R.drawable.loadingscreen);
+        Glide.with(h.itemView.getContext())
+                .load(it.getThumbnailUrl())
+                .placeholder(R.drawable.loadingscreen)
+                .error(R.drawable.loadingscreen)
+                .into(h.ivThumbnail);
 
         boolean isFav = it.getPropertyId() != null && favoriteIds.contains(it.getPropertyId());
         h.ivFavorite.setImageResource(isFav

@@ -16,15 +16,22 @@ public class FavoriteProperty {
 
     public String city;
 
+    public Double minPrice;
+
+    public Double averageRating;
+
     public long savedAt;
 
     public FavoriteProperty() {}
 
-    public FavoriteProperty(long propertyId, @NonNull String name, String thumbnailUrl, String city, long savedAt) {
+    public FavoriteProperty(long propertyId, @NonNull String name, String thumbnailUrl, String city,
+                            Double minPrice, Double averageRating, long savedAt) {
         this.propertyId = propertyId;
         this.name = name;
         this.thumbnailUrl = thumbnailUrl;
         this.city = city;
+        this.minPrice = minPrice;
+        this.averageRating = averageRating;
         this.savedAt = savedAt;
     }
 
@@ -32,5 +39,7 @@ public class FavoriteProperty {
     public String getName() { return name; }
     public String getThumbnailUrl() { return thumbnailUrl; }
     public String getCity() { return city; }
+    public Double getMinPrice() { return minPrice; }
+    public Double getAverageRating() { return averageRating; }
     public long getSavedAt() { return savedAt; }
 }

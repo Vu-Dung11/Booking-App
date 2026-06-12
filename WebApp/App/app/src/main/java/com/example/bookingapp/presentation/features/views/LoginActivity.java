@@ -94,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                 case ERROR:
                     binding.btnLogin.setEnabled(true);
                     binding.btnLogin.setText(getString(R.string.btn_login));
+                    Toast.makeText(this, "đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
                     Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show();
                     break;
             }

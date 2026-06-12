@@ -19,7 +19,7 @@
             android:paddingStart="20dp"
             android:paddingTop="16dp"
             android:paddingEnd="20dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="20dp">
 
             <TextView
                 android:id="@+id/tvGreeting"
@@ -182,7 +182,7 @@
             <HorizontalScrollView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="4dp"
                 android:scrollbars="none"
                 app:layout_constraintTop_toBottomOf="@id/cardSearch"
                 app:layout_constraintStart_toStartOf="parent"
@@ -238,7 +238,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="20dp">
@@ -268,7 +268,7 @@
                 android:id="@+id/rvHomestay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="5dp"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:paddingHorizontal="12dp" />
@@ -283,7 +283,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
         android:contentDescription="Trợ lý ảo"
-        android:src="@drawable/ic_chat"
+        android:src="@drawable/chatboticon"
+        app:maxImageSize="40dp"
         app:backgroundTint="?attr/colorPrimary"
         app:tint="@android:color/white" />
 

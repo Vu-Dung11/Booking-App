@@ -9,7 +9,8 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface"
+
+        android:background="@color/primary"
         app:elevation="0dp">
 
         <TextView
@@ -19,7 +20,8 @@
             android:paddingTop="16dp"
             android:paddingBottom="8dp"
             android:text="Đơn đặt phòng"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/white"
+            android:layout_marginBottom="5dp"
             android:textSize="20sp"
             android:textStyle="bold" />
 

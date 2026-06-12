@@ -197,6 +197,13 @@
   border-color: var(--color-border);
   color: var(--color-text);
 }
+/* Reset kieu nut .btn-danger lon (dung trong modal) khi no la nut icon nho.
+   Khong reset thi padding/background do cua .btn-danger se nuot mat icon SVG. */
+.btn-icon.btn-danger {
+  width: 32px; height: 32px; padding: 0;
+  background: transparent; border: 1px solid transparent;
+  color: var(--color-text-muted);
+}
 .btn-icon.btn-danger:hover {
   background: var(--color-danger-light);
   border-color: rgba(239,68,68,0.3);

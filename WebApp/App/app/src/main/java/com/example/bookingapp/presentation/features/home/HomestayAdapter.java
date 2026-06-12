@@ -73,7 +73,7 @@ public class HomestayAdapter extends RecyclerView.Adapter<HomestayAdapter.ViewHo
         Double rating = homestay.getRating();
         if (rating != null && rating > 0) {
             holder.binding.tvRating.setText(String.format(Locale.US, "%.1f", rating));
-            holder.binding.tvRating.setBackgroundResource(R.drawable.bg_rating);
+//            holder.binding.tvRating.setBackgroundResource(R.drawable.bg_rating);
             holder.binding.tvRating.setTextColor(
                     ContextCompat.getColor(holder.itemView.getContext(), R.color.text_primary));
         } else {

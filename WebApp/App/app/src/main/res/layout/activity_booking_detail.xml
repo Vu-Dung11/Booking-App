@@ -11,10 +11,11 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/surface"
-        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+
+        android:background="@color/primary"
+        app:navigationIcon="@drawable/baseline_arrow_back_24"
         app:title="Chi tiết đơn"
-        app:titleTextColor="@color/text_primary" />
+        app:titleTextColor="@color/white" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -44,9 +45,9 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/surface">
+                    app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -94,17 +95,21 @@
                             android:layout_marginVertical="14dp"
                             android:background="@color/divider" />
 
-                        <include layout="@layout/inc_booking_row"
-                            android:id="@+id/rowRoom" />
+                        <include
+                            android:id="@+id/rowRoom"
+                            layout="@layout/inc_booking_row" />
 
-                        <include layout="@layout/inc_booking_row"
-                            android:id="@+id/rowCheckIn" />
+                        <include
+                            android:id="@+id/rowCheckIn"
+                            layout="@layout/inc_booking_row" />
 
-                        <include layout="@layout/inc_booking_row"
-                            android:id="@+id/rowCheckOut" />
+                        <include
+                            android:id="@+id/rowCheckOut"
+                            layout="@layout/inc_booking_row" />
 
-                        <include layout="@layout/inc_booking_row"
-                            android:id="@+id/rowQuantity" />
+                        <include
+                            android:id="@+id/rowQuantity"
+                            layout="@layout/inc_booking_row" />
 
                         <View
                             android:layout_width="match_parent"
@@ -143,22 +148,22 @@
                     android:layout_marginTop="20dp"
                     android:text="Thanh toán VNPay"
                     android:textColor="@color/white"
+                    android:visibility="gone"
                     app:backgroundTint="@color/primary"
-                    app:cornerRadius="10dp"
-                    android:visibility="gone" />
+                    app:cornerRadius="10dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="12dp"
                     android:text="Hủy đơn"
                     android:textColor="@color/error"
+                    android:visibility="gone"
                     app:cornerRadius="10dp"
                     app:strokeColor="@color/error"
-                    app:strokeWidth="1dp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:visibility="gone" />
+                    app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCheckout"
@@ -167,22 +172,22 @@
                     android:layout_marginTop="12dp"
                     android:text="Tôi đã check-out"
                     android:textColor="@color/white"
+                    android:visibility="gone"
                     app:backgroundTint="@color/primary"
-                    app:cornerRadius="10dp"
-                    android:visibility="gone" />
+                    app:cornerRadius="10dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnReview"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="12dp"
                     android:text="Viết đánh giá"
                     android:textColor="@color/primary"
+                    android:visibility="gone"
                     app:cornerRadius="10dp"
                     app:strokeColor="@color/primary"
-                    app:strokeWidth="1dp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:visibility="gone" />
+                    app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

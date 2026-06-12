@@ -123,8 +123,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             favoriteViewModel.toggle(
                     homestay.getPropertyId(),
                     homestay.getName(),
-                    null,
+                    homestay.getImageUrl(),
                     homestay.getLocation(),
+                    homestay.getPrice(),
+                    homestay.getRating(),
                     isAdded -> {
                         if (getContext() == null) return;
                         getBinding().getRoot().post(() ->

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary"
-        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIcon="@drawable/baseline_arrow_back_24"
         app:title="Đánh giá"
         app:titleTextColor="@color/white" />
 
@@ -45,6 +45,7 @@
                         android:layout_width="72dp"
                         android:layout_height="72dp"
                         android:scaleType="centerCrop"
+                        android:src="@drawable/loadingscreen"
                  />
 
                     <LinearLayout
@@ -92,6 +93,7 @@
                 android:layout_marginTop="8dp"
                 android:numStars="5"
                 android:rating="0"
+                android:progressTint="#FFC107"
                 android:stepSize="1" />
 
             <TextView

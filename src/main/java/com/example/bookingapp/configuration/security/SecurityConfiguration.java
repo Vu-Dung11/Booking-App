@@ -27,6 +27,7 @@ import java.util.List;
 public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     // Khởi tạo Bean mã hóa mật khẩu (BCrypt)
     @Bean
@@ -68,6 +69,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/chat/**").authenticated()
                         .anyRequest().authenticated()
                 )
+                // Khi chua xac thuc (token het han/khong hop le) -> tra 401 thay vi 403 mac dinh
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 // Không lưu trữ session (Session Creation Policy = STATELESS)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Chèn bộ lọc JWT của chúng ta vào trước bộ lọc mặc định của Spring Security

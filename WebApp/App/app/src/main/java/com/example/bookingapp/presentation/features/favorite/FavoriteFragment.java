@@ -48,8 +48,10 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
             viewModel.toggle(
                     homestay.getPropertyId(),
                     homestay.getName(),
-                    null,
+                    homestay.getImageUrl(),
                     homestay.getLocation(),
+                    homestay.getPrice(),
+                    homestay.getRating(),
                     isAdded -> {
                         if (getContext() == null) return;
                         getBinding().getRoot().post(() ->
@@ -81,8 +83,8 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
                             f.getThumbnailUrl(),
                             f.getName(),
                             f.getCity() != null ? f.getCity() : "",
-                            0.0,
-                            0.0,
+                            f.getMinPrice() != null ? f.getMinPrice() : 0.0,
+                            f.getAverageRating() != null ? f.getAverageRating() : 0.0,
                             true
                     ));
                     ids.add(f.getPropertyId());

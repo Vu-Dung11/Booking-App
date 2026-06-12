@@ -19,12 +19,15 @@ public class FavoriteViewModel extends ViewModel {
     public LiveData<List<Long>> getFavoriteIds() { return repository.observeAllIds(); }
 
     public void toggle(long propertyId, String name, String thumbnailUrl, String city,
+                       Double minPrice, Double averageRating,
                        FavoriteRepository.OnToggleResult cb) {
         FavoriteProperty fav = new FavoriteProperty(
                 propertyId,
                 name != null ? name : "",
                 thumbnailUrl,
                 city,
+                minPrice,
+                averageRating,
                 System.currentTimeMillis()
         );
         repository.toggle(fav, cb);
