@@ -9,7 +9,7 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@color/primary"
         android:fitsSystemWindows="true"
         app:elevation="0dp">
 
@@ -42,36 +42,43 @@
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvGreeting"
-                app:layout_constraintEnd_toStartOf="@id/ivAvatar" />
+               />
 
-            <ImageView
-                android:id="@+id/ivAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/circle_white_bg"
-                android:src="@drawable/ic_search_rounded"
-                android:padding="12dp"
-                app:tint="?attr/colorPrimary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="@id/tvUserName" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Nội dung cuộn -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
 
             <!-- Search Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardSearch"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="20dp"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="8dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvUserName">
+                app:cardElevation="20dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@color/white"
                     android:padding="16dp">
 
                     <LinearLayout
@@ -172,6 +179,8 @@
                         app:cornerRadius="12dp"
                         app:icon="@drawable/ic_search_rounded"
                         app:iconGravity="textStart"
+                        android:backgroundTint="@color/primary"
+
                         app:layout_constraintTop_toBottomOf="@id/layoutSearchDate"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
@@ -180,13 +189,11 @@
             </com.google.android.material.card.MaterialCardView>
 
             <HorizontalScrollView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@id/cardSearch"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="20dp"
+                android:scrollbars="none">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupCities"
@@ -195,21 +202,6 @@
                     app:singleLine="true"
                     app:singleSelection="false" />
             </HorizontalScrollView>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Nội dung cuộn -->
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="24dp">
 
             <TextView
                 android:id="@+id/tvCategoryTitle"

@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@color/white"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -20,7 +20,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,6 +45,7 @@
 
                 <FrameLayout
                     android:layout_width="match_parent"
+
                     android:layout_height="match_parent">
 
                     <androidx.viewpager2.widget.ViewPager2
@@ -69,13 +71,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
-                android:visibility="gone">
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:backgroundTint="@color/white"
                     android:orientation="vertical"
                     android:padding="16dp">
 
@@ -110,17 +112,17 @@
                         android:textStyle="bold" />
 
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                        android:layout_marginTop="6dp">
 
                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
                             android:id="@+id/spRoom"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="none"
-                            android:focusable="false" />
+                            android:focusable="false"
+                            android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <LinearLayout
@@ -198,17 +200,28 @@
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
-                        <com.google.android.material.button.MaterialButton
+                        <!--                        <com.google.android.material.button.MaterialButton-->
+                        <!--                            android:id="@+id/btnMinus"-->
+                        <!--                            android:layout_width="40dp"-->
+                        <!--                            android:layout_height="40dp"-->
+                        <!--                            android:insetTop="0dp"-->
+                        <!--                            android:insetBottom="0dp"-->
+                        <!--                            android:text="−"-->
+                        <!--                            android:textColor="@color/primary"-->
+                        <!--                            android:textSize="20sp"-->
+                        <!--                            app:backgroundTint="@color/surface_variant"-->
+                        <!--                            app:cornerRadius="20dp" />-->
+
+
+                        <ImageButton
                             android:id="@+id/btnMinus"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="−"
-                            android:textColor="@color/primary"
-                            android:textSize="20sp"
-                            app:backgroundTint="@color/surface_variant"
-                            app:cornerRadius="20dp" />
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:background="@drawable/bg_circle_button"
+                            android:padding="12dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/minusicon"
+                            android:tint="@null" />
 
                         <TextView
                             android:id="@+id/tvQuantity"
@@ -220,17 +233,28 @@
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
-                        <com.google.android.material.button.MaterialButton
+                        <!--                        <com.google.android.material.button.MaterialButton-->
+                        <!--                            android:id="@+id/btnPlus"-->
+                        <!--                            android:layout_width="40dp"-->
+                        <!--                            android:layout_height="40dp"-->
+                        <!--                            android:insetTop="0dp"-->
+                        <!--                            android:insetBottom="0dp"-->
+                        <!--                            android:text="+"-->
+                        <!--                            android:textColor="@color/primary"-->
+                        <!--                            android:textSize="20sp"-->
+                        <!--                            app:backgroundTint="@color/surface_variant"-->
+                        <!--                            app:cornerRadius="20dp" />-->
+
+
+                        <ImageButton
                             android:id="@+id/btnPlus"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="+"
-                            android:textColor="@color/primary"
-                            android:textSize="20sp"
-                            app:backgroundTint="@color/surface_variant"
-                            app:cornerRadius="20dp" />
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:background="@drawable/bg_circle_button"
+                            android:padding="12dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/add"
+                            android:tint="@null" />
                     </LinearLayout>
 
                     <View

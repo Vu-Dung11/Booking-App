@@ -71,7 +71,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceVariant"
+        android:background="@color/white"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -86,13 +86,14 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
+                app:cardElevation="8dp"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:strokeWidth="0dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@color/white"
                     android:padding="20dp">
 
                     <TextView
@@ -166,7 +167,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
+                app:cardElevation="8dp"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:strokeWidth="0dp">
 
@@ -174,6 +175,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:background="@color/white"
+
                     android:padding="20dp">
 
                     <TextView
@@ -186,16 +189,16 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPickDates"
+                        android:backgroundTint="@color/white"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginTop="12dp"
                         android:gravity="start|center_vertical"
                         android:paddingHorizontal="16dp"
                         android:text="Chọn ngày"
+                        android:textColor="@color/black"
                         android:textAllCaps="false"
-                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
-                        app:backgroundTint="?attr/colorSurfaceVariant"
                         app:cornerRadius="12dp"
                         app:icon="@android:drawable/ic_menu_my_calendar"
                         app:iconGravity="textStart"
@@ -217,17 +220,17 @@
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
-                        <com.google.android.material.button.MaterialButton
+
+
+                        <ImageButton
                             android:id="@+id/btnGuestsMinus"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="−"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="24sp"
-                            app:backgroundTint="?attr/colorSurfaceVariant"
-                            app:cornerRadius="24dp" />
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:src="@drawable/minusicon"
+                            android:background="@drawable/bg_circle_button"
+                            android:padding="12dp"
+                            android:scaleType="centerInside"
+                            android:tint="@null"/>
 
                         <TextView
                             android:id="@+id/tvGuests"
@@ -239,17 +242,16 @@
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
-                        <com.google.android.material.button.MaterialButton
+
+                        <ImageButton
                             android:id="@+id/btnGuestsPlus"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="+"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="24sp"
-                            app:backgroundTint="?attr/colorSurfaceVariant"
-                            app:cornerRadius="24dp" />
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:src="@drawable/add"
+                            android:background="@drawable/bg_circle_button"
+                            android:padding="12dp"
+                            android:scaleType="centerInside"
+                            android:tint="@null"/>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -269,6 +271,8 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvRooms"
                 android:layout_width="match_parent"
+                android:background="@color/white"
+
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
@@ -312,6 +316,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:background="@color/white"
+
                     android:nestedScrollingEnabled="false"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 

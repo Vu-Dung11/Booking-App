@@ -30,16 +30,26 @@
             android:textColor="@color/text_primary"
             android:textSize="15sp" />
 
-        <com.google.android.material.button.MaterialButton
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:id="@+id/btnMinus"-->
+<!--            style="@style/Widget.Material3.Button.OutlinedButton"-->
+<!--            android:layout_width="48dp"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:text="-"-->
+<!--            android:textColor="@android:color/black"-->
+<!--            android:textSize="24sp"-->
+<!--            android:insetTop="0dp"-->
+<!--            android:insetBottom="0dp"-->
+<!--            app:cornerRadius="24dp"/>-->
+        <ImageButton
             android:id="@+id/btnMinus"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="-"
-            android:textSize="20sp"
-            app:cornerRadius="24dp" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/minusicon"
+            android:background="@drawable/bg_circle_button"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:tint="@null"/>
 
         <TextView
             android:id="@+id/tvGuestCount"
@@ -51,16 +61,16 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
+        <ImageButton
             android:id="@+id/btnPlus"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="+"
-            android:textSize="20sp"
-            app:cornerRadius="24dp" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/add"
+            android:background="@drawable/bg_circle_button"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:tint="@null"/>
+
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton

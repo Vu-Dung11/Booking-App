@@ -75,7 +75,7 @@ public class HomestayAdapter extends RecyclerView.Adapter<HomestayAdapter.ViewHo
             holder.binding.tvRating.setText(String.format(Locale.US, "%.1f", rating));
 //            holder.binding.tvRating.setBackgroundResource(R.drawable.bg_rating);
             holder.binding.tvRating.setTextColor(
-                    ContextCompat.getColor(holder.itemView.getContext(), R.color.text_primary));
+                    ContextCompat.getColor(holder.itemView.getContext(), R.color.text_rating));
         } else {
             holder.binding.tvRating.setText(" ");
 //            holder.binding.tvRating.setBackgroundResource(0);
